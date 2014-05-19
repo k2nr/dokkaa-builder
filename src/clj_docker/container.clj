@@ -7,7 +7,8 @@
 (defn create-container [cli name & {:keys [host-config]}]
   (client/post cli "/containers/create"
                (merge {:content-type :json
-                       :query-params {:name name}}
+                       :query-params {:name name}
+                       :as :json}
                       (when host-config
                         {:body (json/generate-string (map-keys ->CamelCase host-config))}))))
 
@@ -28,7 +29,8 @@
                                  :stream stream
                                  :stdin  stdin
                                  :stdout stdout
-                                 :stderr stderr}})))
+                                 :stderr stderr}
+                  :as :stream})))
 
 (defn logs [cli container & {:keys [follow stdout stderr timestamps]}]
   (let [id (:id container)]
@@ -36,4 +38,35 @@
                 {:query-params {:follow follow
                                 :stdout stdout
                                 :stderr stderr
-                                :timestamps timestamps}})))
+                                :timestamps timestamps}
+                 :as :stream})))
+
+(defn list-containers [cli & {:keys [all limit since before  size]}]
+  (client/get cli "/containers/json"
+              {:query-params {:all all
+                              :limit limit
+                              :since since
+                              :before before
+                              :size size}
+               :as :json}))
+
+(defn inspect [cli container]
+  (let [id (:id container)]
+    (client/get cli (str "/containers/" id "/json")
+                {:as :json})))
+
+(defn stop [cli container & {:keys [time]}]
+  (let [id (:id container)]
+    (client/post cli (str "/containers/" id "/stop")
+                 {:query-params {:t time}})))
+
+(defn kill [cli container & {:keys [signal]}]
+  (let [id (:id container)]
+    (client/post cli (str "/containers/" id "/kill")
+                 {:query-params {:signal signal}})))
+
+(defn remove [cli container & {:keys [remove-volumes force]}]
+  (let [id (:id container)]
+    (client/delete cli (str "/containers" id)
+                   {:query-params {:v remove-volumes
+                                   :force force}})))

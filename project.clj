@@ -13,6 +13,7 @@
                  [ring/ring-devel "1.2.2"]
                  [ring "1.2.2"]
                  [clj-http "0.9.1"]
+                 [slingshot "0.10.3"]
                  [org.apache.commons/commons-compress "1.8.1"]
                  [org.apache.commons/commons-io "1.3.2"]
                  [camel-snake-kebab "0.1.5"]]

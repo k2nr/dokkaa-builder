@@ -1,5 +1,6 @@
 (ns clj-docker.client
-  (:require [clj-http.client :as http]))
+  (:require [clj-http.client :as http]
+            [slingshot.slingshot :refer [throw+ try+]]))
 
 (defprotocol DockerClient
   (url [this path]))
@@ -10,15 +11,37 @@
   (post   [this path opts]))
 
 (defn- make-opts [opts]
-  (merge {:as :stream} opts))
+  (merge {} opts))
+
+(def methods {:get    http/get
+              :post   http/post
+              :delete http/delete})
+
+(def handlable-errors {400 {:type ::bad-parameter}
+                       404 {:type ::not-found}
+                       406 {:type ::not-acceptable}
+                       409 {:type ::conflict}
+                       500 {:type ::server-error}})
+
+(defn error-info [resp]
+  (merge (-> resp (:status) (handlable-errors))
+         {:response resp}))
+
+(defn- request [url method opts]
+  (try+
+   (let [method-fn (method methods)
+         response (method-fn url (make-opts opts))]
+     (:body response))
+   (catch #(-> % (:status) (handlable-errors)) response
+     (throw+ (error-info response)))))
 
 (defrecord Client [host]
   DockerClient
   (url [this path] (str "http://" host path))
   RESTClient
-  (get    [this path opts] (http/get    (url this path) (make-opts opts)))
-  (delete [this path opts] (http/delete (url this path) (make-opts opts)))
-  (post   [this path opts] (http/post   (url this path) (make-opts opts))))
+  (get    [this path opts] (request (url this path) :get    opts))
+  (delete [this path opts] (request (url this path) :delete opts))
+  (post   [this path opts] (request (url this path) :post   opts)))
 
 (defn make-client
   ([] (make-client "localhost:4243"))
