@@ -4,13 +4,14 @@
             [cheshire.core :as json]
             [camel-snake-kebab :refer[->kebab-case ->CamelCase]]))
 
-(defn create-container [cli name & {:keys [host-config]}]
-  (client/post cli "/containers/create"
-               (merge {:content-type :json
-                       :query-params {:name name}
-                       :as :json}
-                      (when host-config
-                        {:body (json/generate-string (map-keys ->CamelCase host-config))}))))
+(defn create-container [cli & {:keys [name host-config]}]
+  (map-keys ->kebab-case
+            (client/post cli "/containers/create"
+                         (merge {:content-type :json
+                                 :query-params {:name name}
+                                 :as :json}
+                                (when host-config
+                                  {:body (json/generate-string (map-keys ->CamelCase host-config))})))))
 
 (defn start
   ([cli container] (start cli container {}))
