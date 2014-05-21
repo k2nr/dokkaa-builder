@@ -4,25 +4,60 @@
             [cheshire.core :as json]
             [camel-snake-kebab :refer[->kebab-case ->CamelCase]]))
 
-(defn create-container [cli & {:keys [name host-config]}]
+(defn ->host-config [config]
+  (map-keys ->CamelCase config))
+
+(defn create-container-from-config [cli host-config & {:keys [name]}]
   (map-keys ->kebab-case
             (client/post cli "/containers/create"
-                         (merge {:content-type :json
-                                 :query-params {:name name}
-                                 :as :json}
-                                (when host-config
-                                  {:body (json/generate-string (map-keys ->CamelCase host-config))})))))
+                         {:content-type :json
+                          :query-params {:name name}
+                          :as :json
+                          :body (json/generate-string
+                                 (map-keys ->CamelCase host-config))})))
+
+(defn create-container [cli image & {:keys [; host config
+                                            hostname
+                                            domainname
+                                            exposed-ports
+                                            user
+                                            tty
+                                            open-stdin
+                                            stdin-once
+                                            memory
+                                            attach-stdin
+                                            attach-stdout
+                                            attach-stderr
+                                            env
+                                            cmd
+                                            dns
+                                            volumes
+                                            volumes-from
+                                            network-disabled
+                                            entrypoint
+                                            cpu-shares
+                                            working-dir
+                                            memory-swap
+                                            ; query parameters
+                                            name
+                                           ] :as config}]
+  (let [host-config (-> config
+                        (assoc :image image)
+                        (dissoc :name)
+                        (->host-config))]
+    (create-container-from-config cli host-config :name name)))
 
 (defn start
-  ([cli container] (start cli container {}))
-  ([cli container host-config]
+  ([cli container & {:keys [host-config stream]}]
      (let [id (:id container)]
        (client/post cli (str "/containers/" id "/start")
                     (merge
                      {:content-type :json
-                      :as :json}
+                      :as (if stream :stream :json)}
                      (when host-config
-                       {:body (json/generate-string host-config)}))))))
+                       {:body (if host-config
+                                (json/generate-string host-config)
+                                "{}")}))))))
 
 (defn attach [cli container & {:keys [logs stream stdin stdout stderr]}]
   (let [id (:id container)]

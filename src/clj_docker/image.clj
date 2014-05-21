@@ -4,14 +4,14 @@
             [k2nr-utils.tar  :refer [create-archive with-open-tar add-entry]]
             [clojure.java.io :refer [file input-stream delete-file]]))
 
-(defn build-from-stream [cli stream & {:keys [name quiet no-cache]}]
+(defn build-from-stream [cli body-stream & {:keys [name quiet no-cache stream]}]
   (client/post cli "/build"
                {:headers {"Content-Type" "application/tar"}
                 :query-params {:t name
                                :q quiet
                                :nocache no-cache}
-                :body stream
-                :as :stream}))
+                :body body-stream
+                :as (if stream :stream :json)}))
 
 (defn build-from-dir [cli path & opts]
   (let [tar (create-archive path)
@@ -29,10 +29,10 @@
     (delete-file tar)
     response))
 
-(defn create-image [cli name & {:keys [repo tag registry]}]
+(defn create-image [cli name & {:keys [repo tag registry stream]}]
   (client/post cli "/images/create"
                {:query-params {:fromImage name
                                :repo      repo
                                :tag       tag
                                :registry  registry}
-                :as :stream}))
+                :as (if stream :stream :json)}))

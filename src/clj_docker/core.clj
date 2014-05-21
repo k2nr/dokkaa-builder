@@ -1,24 +1,59 @@
 (ns clj-docker.core
   (:require [clj-docker.client :as client]
             [clj-docker.container :as container]
-            [clj-docker.image :as image]))
+            [clj-docker.utils :as utils]
+            [clj-docker.image :as image]
+            [slingshot.slingshot :refer [try+]]))
+
+(def make-client clj-docker.client/make-client)
 
 (defn version [cli]
   (client/get cli "/version" {:as :json}))
 
-(defn- create!
-  "create the container. if the container not found, try pull and retry create"
-  [cli name & {:keys [host-config tag repo registry]}]
-  (try+
-   (container/create-container cli name :host-config host-config)
-   (catch #(= (:type %) :client/not-found) _
-     (image/create-image cli name :tag tag :repo :registry registry)
-     (container/create-container cli name :host-config host-config))))
+(defn run [cli image & {:keys [; host config
+                               hostname
+                               domainname
+                               exposed-ports
+                               user
+                               tty
+                               open-stdin
+                               stdin-once
+                               memory
+                               attach-stdin
+                               attach-stdout
+                               attach-stderr
+                               env
+                               cmd
+                               dns
+                               volumes
+                               volumes-from
+                               network-disabled
+                               entrypoint
+                               cpu-shares
+                               working-dir
+                               memory-swap
+                               ; query parameters
+                               name
+                               tag
+                               repo
+                               registry
+                               ] :as config}]
+  (let [host-config (-> config
+                        (assoc :image (str image (when tag (str ":" tag))))
+                        (dissoc :name :tag :repo :registry))
+        container (try+
+                   (container/create-container-from-config cli host-config :name name)
+                   (catch #(= (:type %) ::clj-docker.client/not-found) _
+                     (image/create-image cli image
+                                         :tag tag
+                                         :repo repo
+                                         :registry registry)
+                     (container/create-container-from-config cli host-config :name name)))]
 
-(defn run [cli name & {:keys [host-config tag repo registry]}]
-  (let [container (create! cli name
-                           :host-config host-config
-                           :tag tag
-                           :repo repo
-                           :registry registry)]
-    (container/start cli container host-config)))
+    (container/start cli (:id container))))
+
+;; examples
+(comment
+  (def cli(clj-docker.client/make-client))
+  (version cli)
+  (clj-docker.core/run cli "ubuntu" :tag "14.04" :cmd ["ls"]))
