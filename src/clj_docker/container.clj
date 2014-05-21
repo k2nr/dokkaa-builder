@@ -19,7 +19,8 @@
      (let [id (:id container)]
        (client/post cli (str "/containers/" id "/start")
                     (merge
-                     {:content-type :json}
+                     {:content-type :json
+                      :as :json}
                      (when host-config
                        {:body (json/generate-string host-config)}))))))
 
