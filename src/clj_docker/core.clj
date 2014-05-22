@@ -76,9 +76,3 @@
                                         :m         message
                                         :author    author}
                          :as :json})))
-
-;; examples
-(comment
-  (def cli(clj-docker.client/make-client))
-  (version cli)
-  (clj-docker.core/run cli "ubuntu" :tag "14.04" :cmd ["ls"]))
