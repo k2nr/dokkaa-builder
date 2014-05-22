@@ -4,6 +4,9 @@
             [cheshire.core :as json]
             [camel-snake-kebab :refer[->kebab-case ->CamelCase]]))
 
+(defn- path [& strs]
+  (apply str "/containers/" strs))
+
 (defn ->host-config [config]
   (map-keys ->CamelCase config))
 
@@ -55,33 +58,30 @@
                             privileged
                             ; stream response config
                             stream] :as config}]
-     (let [id (:id container)
-           host-config (-> config
+     (let [host-config (-> config
                            (dissoc :stream)
                            (->host-config))]
-       (client/post cli (str "/containers/" id "/start")
+       (client/post cli (path container "/start")
                     {:content-type :json
                      :as (if stream :stream :json)
                      :body (json/generate-string host-config)}))))
 
 (defn attach [cli container & {:keys [logs stream stdin stdout stderr]}]
-  (let [id (:id container)]
-    (client/post cli (str "/containers/" id "/attach")
-                 {:query-params {:logs logs
-                                 :stream stream
-                                 :stdin  stdin
-                                 :stdout stdout
-                                 :stderr stderr}
-                  :as :stream})))
+  (client/post cli (path container "/attach")
+               {:query-params {:logs logs
+                               :stream stream
+                               :stdin  stdin
+                               :stdout stdout
+                               :stderr stderr}
+                :as :stream}))
 
 (defn logs [cli container & {:keys [follow stdout stderr timestamps]}]
-  (let [id (:id container)]
-    (client/get cli (str "/containers/" id "/logs")
-                {:query-params {:follow follow
-                                :stdout stdout
-                                :stderr stderr
-                                :timestamps timestamps}
-                 :as :stream})))
+  (client/get cli (path container "/logs")
+              {:query-params {:follow follow
+                              :stdout stdout
+                              :stderr stderr
+                              :timestamps timestamps}
+               :as :stream}))
 
 (defn list [cli & {:keys [all limit since before  size]}]
   (client/get cli "/containers/json"
@@ -93,28 +93,23 @@
                :as :json}))
 
 (defn inspect [cli container]
-  (let [id (:id container)]
-    (client/get cli (str "/containers/" id "/json")
-                {:as :json})))
+  (client/get cli (path container "/json")
+              {:as :json}))
 
 (defn stop [cli container & {:keys [time]}]
-  (let [id (:id container)]
-    (client/post cli (str "/containers/" id "/stop")
-                 {:query-params {:t time}})))
+  (client/post cli (path container "/stop")
+               {:query-params {:t time}}))
 
 (defn kill [cli container & {:keys [signal]}]
-  (let [id (:id container)]
-    (client/post cli (str "/containers/" id "/kill")
-                 {:query-params {:signal signal}})))
+  (client/post cli (path container "/kill")
+               {:query-params {:signal signal}}))
 
 (defn remove [cli container & {:keys [remove-volumes force]}]
-  (let [id (:id container)]
-    (client/delete cli (str "/containers" id)
-                   {:query-params {:v remove-volumes
-                                   :force force}})))
+  (client/delete cli (path container)
+                 {:query-params {:v remove-volumes
+                                 :force force}}))
 
 (defn top [cli container & {:keys [ps-args]}]
-  (let [id (:id container)]
-    (client/get cli (str "/containers/" id "/top")
-                {:query-params {:ps_args ps-args}
-                 :as :json})))
+  (client/get cli (path container "/top")
+              {:query-params {:ps_args ps-args}
+               :as :json}))

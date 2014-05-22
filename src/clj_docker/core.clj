@@ -59,23 +59,22 @@
                                          :repo repo
                                          :registry registry)
                      (container/create-from-config cli host-config :name name)))]
-
-    (container/start cli (:id container)
-                     :binds lxc-conf
-                     :lxc-conf lxc-conf
-                     :port-bindigs port-bindings
-                     :publish-all-ports port-bindings
-                     :privileged privileged)
-    (:id container)))
+    (container/start cli container
+                     :binds             binds
+                     :lxc-conf          lxc-conf
+                     :port-bindigs      port-bindings
+                     :publish-all-ports publish-all-ports
+                     :privileged        privileged)
+    container))
 
 (defn commit [cli container & {:keys [repo tag message author]}]
   (utils/map-keys ->kebab-case
             (client/post cli "/commit"
                         {:query-params {:container container
-                                        :repo repo
-                                        :tag tag
-                                        :m message
-                                        :author author}
+                                        :repo      repo
+                                        :tag       tag
+                                        :m         message
+                                        :author    author}
                          :as :json})))
 
 ;; examples
