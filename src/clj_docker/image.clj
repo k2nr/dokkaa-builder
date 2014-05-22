@@ -36,3 +36,28 @@
                                :tag       tag
                                :registry  registry}
                 :as (if stream :stream :json)}))
+
+(defn push [cli name & {:keys [registry stream]}]
+  (client/post cli (str "/images/" name "/push")
+               {:query-params {:registry registry}
+                :as (if stream :stream :json)}))
+
+(defn tag [cli name & {:keys [repo force]}]
+  (client/post cli (str "/images" name "/tag")
+               {:query-params {:repo repo
+                               :force force}}))
+
+(defn remove-image [cli name & {:keys [force noprune]}]
+  (client/delete cli (str "/images/" name)
+                 {:query-params {:force force
+                                 :noprune noprune}
+                  :as :json}))
+
+(defn search-image [cli term]
+  (client/get cli "/images/search"
+              {:query-params {:term term}
+               :as :json}))
+
+(defn history [cli name]
+  (client/get cli (str "/images/" name "/history")
+              {:as :json}))
