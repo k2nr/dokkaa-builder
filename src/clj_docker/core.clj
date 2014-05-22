@@ -47,17 +47,23 @@
                                tag
                                repo
                                registry
+                               ; function options
+                               stream
+                               stream-fn
                                ] :as config}]
   (let [host-config (-> config
                         (assoc :image (str image (when tag (str ":" tag))))
-                        (dissoc :name :tag :repo :registry))
+                        (dissoc :name :tag :repo :registry :stream :stream-fn))
         container-id (:id (try+
                            (container/create-from-config cli host-config :name name)
                            (catch #(= (:type %) ::clj-docker.client/not-found) _
-                             (image/create cli image
-                                           :tag tag
-                                           :repo repo
-                                           :registry registry)
+                             (let [resp (image/create cli image
+                                                      :tag      tag
+                                                      :repo     repo
+                                                      :registry registry
+                                                      :stream   stream)]
+                               (when stream
+                                 (utils/json-stream-fetcher resp stream-fn)))
                              (container/create-from-config cli host-config :name name))))]
     (container/start cli container-id
                      :binds             binds
