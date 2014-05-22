@@ -55,15 +55,11 @@
                             lxc-conf
                             port-bindings
                             publish-all-ports
-                            privileged
-                            ; stream response config
-                            stream] :as config}]
-     (let [host-config (-> config
-                           (dissoc :stream)
-                           (->host-config))]
+                            privileged] :as config}]
+     (let [host-config (->host-config config)]
        (client/post cli (path container "/start")
                     {:content-type :json
-                     :as (if stream :stream :json)
+                     :as :json
                      :body (json/generate-string host-config)}))))
 
 (defn attach [cli container & {:keys [logs stream stdin stdout stderr]}]
