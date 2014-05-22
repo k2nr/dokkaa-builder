@@ -5,7 +5,10 @@
             [clj-docker.image :as image]
             [slingshot.slingshot :refer [try+]]))
 
-(def make-client clj-docker.client/make-client)
+(def make-client client/make-client)
+
+(defn ping [cli]
+  (client/get cli "/_ping" {}))
 
 (defn version [cli]
   (client/get cli "/version" {:as :json}))
