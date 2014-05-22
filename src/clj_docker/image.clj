@@ -15,7 +15,7 @@
 
 (defn build-from-dir [cli path & opts]
   (let [tar (create-archive path)
-        response (build-from-stream cli (input-stream tar) opts)]
+        response (apply build-from-stream cli (input-stream tar) opts)]
     (delete-file tar)
     response))
 
@@ -25,7 +25,7 @@
               "dockerfile.tar.gz"
               (fn [tar]
                 (add-entry tar docker-file "Dockerfile")))
-        response (build-from-stream cli (input-stream tar) opts)]
+        response (apply build-from-stream cli (input-stream tar) opts)]
     (delete-file tar)
     response))
 
