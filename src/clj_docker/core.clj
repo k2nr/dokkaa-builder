@@ -51,21 +51,21 @@
   (let [host-config (-> config
                         (assoc :image (str image (when tag (str ":" tag))))
                         (dissoc :name :tag :repo :registry))
-        container (try+
-                   (container/create-from-config cli host-config :name name)
-                   (catch #(= (:type %) ::clj-docker.client/not-found) _
-                     (image/create-image cli image
-                                         :tag tag
-                                         :repo repo
-                                         :registry registry)
-                     (container/create-from-config cli host-config :name name)))]
-    (container/start cli container
+        container-id (:id (try+
+                           (container/create-from-config cli host-config :name name)
+                           (catch #(= (:type %) ::clj-docker.client/not-found) _
+                             (image/create cli image
+                                           :tag tag
+                                           :repo repo
+                                           :registry registry)
+                             (container/create-from-config cli host-config :name name))))]
+    (container/start cli container-id
                      :binds             binds
                      :lxc-conf          lxc-conf
                      :port-bindigs      port-bindings
                      :publish-all-ports publish-all-ports
                      :privileged        privileged)
-    container))
+    container-id))
 
 (defn commit [cli container & {:keys [repo tag message author]}]
   (utils/map-keys ->kebab-case
