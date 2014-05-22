@@ -10,7 +10,7 @@
 (defn version [cli]
   (client/get cli "/version" {:as :json}))
 
-(defn run [cli image & {:keys [; host config
+(defn run [cli image & {:keys [; create host config
                                hostname
                                domainname
                                exposed-ports
@@ -32,6 +32,12 @@
                                cpu-shares
                                working-dir
                                memory-swap
+                               ; start host config
+                               binds
+                               lxc-conf
+                               port-bindings
+                               publish-all-ports
+                               privileged
                                ; query parameters
                                name
                                tag
@@ -50,7 +56,12 @@
                                          :registry registry)
                      (container/create-container-from-config cli host-config :name name)))]
 
-    (container/start cli (:id container))))
+    (container/start cli (:id container)
+                     :binds lxc-conf
+                     :lxc-conf lxc-conf
+                     :port-bindigs port-bindings
+                     :publish-all-ports port-bindings
+                     :privileged privileged)))
 
 ;; examples
 (comment

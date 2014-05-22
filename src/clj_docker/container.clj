@@ -48,16 +48,22 @@
     (create-container-from-config cli host-config :name name)))
 
 (defn start
-  ([cli container & {:keys [host-config stream]}]
-     (let [id (:id container)]
+  ([cli container & {:keys [; host config
+                            binds
+                            lxc-conf
+                            port-bindings
+                            publish-all-ports
+                            privileged
+                            ; stream response config
+                            stream] :as config}]
+     (let [id (:id container)
+           host-config (-> config
+                           (dissoc :stream)
+                           (->host-config))]
        (client/post cli (str "/containers/" id "/start")
-                    (merge
-                     {:content-type :json
-                      :as (if stream :stream :json)}
-                     (when host-config
-                       {:body (if host-config
-                                (json/generate-string host-config)
-                                "{}")}))))))
+                    {:content-type :json
+                     :as (if stream :stream :json)
+                     :body (json/generate-string host-config)}))))
 
 (defn attach [cli container & {:keys [logs stream stdin stdout stderr]}]
   (let [id (:id container)]
