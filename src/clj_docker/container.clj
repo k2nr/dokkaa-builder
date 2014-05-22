@@ -7,7 +7,7 @@
 (defn ->host-config [config]
   (map-keys ->CamelCase config))
 
-(defn create-container-from-config [cli host-config & {:keys [name]}]
+(defn create-from-config [cli host-config & {:keys [name]}]
   (map-keys ->kebab-case
             (client/post cli "/containers/create"
                          {:content-type :json
@@ -16,36 +16,35 @@
                           :body (json/generate-string
                                  (map-keys ->CamelCase host-config))})))
 
-(defn create-container [cli image & {:keys [; host config
-                                            hostname
-                                            domainname
-                                            exposed-ports
-                                            user
-                                            tty
-                                            open-stdin
-                                            stdin-once
-                                            memory
-                                            attach-stdin
-                                            attach-stdout
-                                            attach-stderr
-                                            env
-                                            cmd
-                                            dns
-                                            volumes
-                                            volumes-from
-                                            network-disabled
-                                            entrypoint
-                                            cpu-shares
-                                            working-dir
-                                            memory-swap
-                                            ; query parameters
-                                            name
-                                           ] :as config}]
+(defn create [cli image & {:keys [; host config
+                                  hostname
+                                  domainname
+                                  exposed-ports
+                                  user
+                                  tty
+                                  open-stdin
+                                  stdin-once
+                                  memory
+                                  attach-stdin
+                                  attach-stdout
+                                  attach-stderr
+                                  env
+                                  cmd
+                                  dns
+                                  volumes
+                                  volumes-from
+                                  network-disabled
+                                  entrypoint
+                                  cpu-shares
+                                  working-dir
+                                  memory-swap
+                                  ; query parameters
+                                  name] :as config}]
   (let [host-config (-> config
                         (assoc :image image)
                         (dissoc :name)
                         (->host-config))]
-    (create-container-from-config cli host-config :name name)))
+    (create-from-config cli host-config :name name)))
 
 (defn start
   ([cli container & {:keys [; host config
@@ -84,7 +83,7 @@
                                 :timestamps timestamps}
                  :as :stream})))
 
-(defn list-containers [cli & {:keys [all limit since before  size]}]
+(defn list [cli & {:keys [all limit since before  size]}]
   (client/get cli "/containers/json"
               {:query-params {:all all
                               :limit limit

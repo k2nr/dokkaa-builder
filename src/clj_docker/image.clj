@@ -29,7 +29,7 @@
     (delete-file tar)
     response))
 
-(defn create-image [cli name & {:keys [repo tag registry stream]}]
+(defn create [cli name & {:keys [repo tag registry stream]}]
   (client/post cli "/images/create"
                {:query-params {:fromImage name
                                :repo      repo
@@ -47,13 +47,13 @@
                {:query-params {:repo repo
                                :force force}}))
 
-(defn remove-image [cli name & {:keys [force noprune]}]
+(defn remove [cli name & {:keys [force noprune]}]
   (client/delete cli (str "/images/" name)
                  {:query-params {:force force
                                  :noprune noprune}
                   :as :json}))
 
-(defn search-image [cli term]
+(defn search [cli term]
   (client/get cli "/images/search"
               {:query-params {:term term}
                :as :json}))

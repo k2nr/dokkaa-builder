@@ -52,13 +52,13 @@
                         (assoc :image (str image (when tag (str ":" tag))))
                         (dissoc :name :tag :repo :registry))
         container (try+
-                   (container/create-container-from-config cli host-config :name name)
+                   (container/create-from-config cli host-config :name name)
                    (catch #(= (:type %) ::clj-docker.client/not-found) _
                      (image/create-image cli image
                                          :tag tag
                                          :repo repo
                                          :registry registry)
-                     (container/create-container-from-config cli host-config :name name)))]
+                     (container/create-from-config cli host-config :name name)))]
 
     (container/start cli (:id container)
                      :binds lxc-conf
