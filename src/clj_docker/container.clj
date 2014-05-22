@@ -112,3 +112,9 @@
     (client/delete cli (str "/containers" id)
                    {:query-params {:v remove-volumes
                                    :force force}})))
+
+(defn top [cli container & {:keys [ps-args]}]
+  (let [id (:id container)]
+    (client/get cli (str "/containers/" id "/top")
+                {:query-params {:ps_args ps-args}
+                 :as :json})))
