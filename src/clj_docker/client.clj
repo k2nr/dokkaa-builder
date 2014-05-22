@@ -11,7 +11,8 @@
   (post   [this path opts]))
 
 (defn- make-opts [opts]
-  (merge {} opts))
+  (merge {:throw-entire-message? true}
+         opts))
 
 (def methods {:get    http/get
               :post   http/post
