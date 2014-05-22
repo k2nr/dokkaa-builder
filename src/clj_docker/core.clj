@@ -76,8 +76,7 @@
                                         :tag tag
                                         :m message
                                         :author author}
-                         :as :json
-                         :debug true})))
+                         :as :json})))
 
 ;; examples
 (comment
