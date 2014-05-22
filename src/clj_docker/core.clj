@@ -3,7 +3,8 @@
             [clj-docker.container :as container]
             [clj-docker.utils :as utils]
             [clj-docker.image :as image]
-            [slingshot.slingshot :refer [try+]]))
+            [slingshot.slingshot :refer [try+]]
+            [camel-snake-kebab :refer[->kebab-case ->CamelCase]]))
 
 (def make-client client/make-client)
 
@@ -64,7 +65,19 @@
                      :lxc-conf lxc-conf
                      :port-bindigs port-bindings
                      :publish-all-ports port-bindings
-                     :privileged privileged)))
+                     :privileged privileged)
+    (:id container)))
+
+(defn commit [cli container & {:keys [repo tag message author]}]
+  (utils/map-keys ->kebab-case
+            (client/post cli "/commit"
+                        {:query-params {:container container
+                                        :repo repo
+                                        :tag tag
+                                        :m message
+                                        :author author}
+                         :as :json
+                         :debug true})))
 
 ;; examples
 (comment
