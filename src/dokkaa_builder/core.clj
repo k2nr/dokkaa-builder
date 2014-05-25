@@ -1,20 +1,10 @@
 (ns dokkaa-builder.core
-  (:use [environ.core :only [env]]
-        [org.httpkit.server :only [run-server]]
-        [compojure.core :only [defroutes GET POST DELETE ANY context]]
-        [compojure.handler :only [site]]
-        [compojure.route :only [files not-found]]
-        [ring.middleware.reload :as reload]))
-
-(defn build [params body]
-  (str params "," (slurp body)))
-
-(defn ping [req]
-  "hello")
-
-(defroutes routes
-  (POST "/" {params :params, body :body} (build params body))
-  (GET  "/"  [] ping))
+  (:require [environ.core :refer [env]]
+            [org.httpkit.server :refer [run-server]]
+            [compojure.handler :refer [site]]
+            [ring.middleware.reload :as reload]
+            [dokkaa-builder.route :as route]
+            [dokkaa-builder.util :as util]))
 
 (defonce server (atom nil))
 
@@ -26,19 +16,13 @@
     (@server :timeout 100)
     (reset! server nil)))
 
-(defn stage []
-  (or (env :stage) "development"))
-
-(defn in-dev? []
-  (= (stage) "development"))
-
-(def app (-> routes
+(def app (-> route/routes
              (site)))
 
 (defn start-server
   ([] (start-server nil))
   ([port] (let [port (or port 8080)
-                myapp (if (in-dev?)
+                myapp (if (util/in-dev?)
                         (reload/wrap-reload app)
                         app)]
             (reset! server (run-server myapp {:port port}))
