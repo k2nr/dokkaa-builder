@@ -9,6 +9,8 @@
                  [http-kit "2.1.18"]
                  [compojure "1.1.8"]
                  [cheshire "5.3.1"]
+                 [clj-http "0.9.1"]
+                 [com.cemerick/friend "0.2.1"]
                  [clojurewerkz/urly "1.0.0"]
                  [ring/ring-devel "1.2.2"]
                  [ring "1.2.2"]
