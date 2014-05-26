@@ -1,7 +1,6 @@
 (ns dokkaa-builder.route
   (:require [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
             [compojure.route :refer [files not-found]]
-            [k2nr.docker.core :as docker]
             [dokkaa-builder.apps :as apps]
             [dokkaa-builder.auth :as auth]))
 
@@ -13,7 +12,7 @@
         tag   (or (get-in req [:params :tag]) "latest")
         command (get-in req [:params :command])
         port  (get-in req [:params :port])
-        port-bind-to (+ (rand-int 10000) 40000)]
+        port-bind-to (+ (rand-int 1000) 10000)]
     (println "port-bind-to: " port-bind-to)
     (if user
       (apps/create app-name user image

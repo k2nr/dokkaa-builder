@@ -1,4 +1,5 @@
 (ns dokkaa-builder.core
+  (:gen-class)
   (:require [environ.core :refer [env]]
             [org.httpkit.server :refer [run-server]]
             [compojure.handler :refer [site]]
@@ -20,9 +21,8 @@
              (site)))
 
 (defn start-server
-  ([] (start-server nil))
-  ([port] (let [port (or port 8080)
-                myapp (if (util/in-dev?)
+  ([] (start-server 8080))
+  ([port] (let [myapp (if (util/in-dev?)
                         (reload/wrap-reload app)
                         app)]
             (reset! server (run-server myapp {:port port}))
@@ -33,5 +33,5 @@
   (start-server))
 
 (defn -main [& args]
-  (start-server (Integer. (env :port)))
+  (start-server (Integer. (or (env :port) "8080")))
   (println "Starting Server..."))
