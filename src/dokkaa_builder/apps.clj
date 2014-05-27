@@ -1,14 +1,16 @@
 (ns dokkaa-builder.apps
   (:require [k2nr.docker.core :as docker]
             [k2nr.docker.container :as container]
-            [dokkaa-builder.apps-router :as router]))
+            [dokkaa-builder.apps-router :as router]
+            [dokkaa-builder.config :as config]
+            [clojurewerkz.urly.core :as urly]))
 
 (def apps (atom {}))
 
 (defn choose-client
   "Randomly choose docker backend"
   []
-  (docker/make-client "localhost:4243"))
+  (docker/make-client "127.0.0.1:4243"))
 
 (defn generate-host-port [host]
   (+ 10000 (rand 1000)))
@@ -28,8 +30,10 @@
       (let [id (docker/run cli image :tag tag
                                      :cmd command
                                      :port-bindings port-bindings)
-            domain (str (name app-name) ".localhost")]
-        (router/add-domain domain (str (.host cli) ":" port))
+            host (urly/url-like (str "http://" (.host cli)))
+            domain (str (name app-name) "." (config/domain-name))]
+        (router/add-domain domain)
+        (router/add-upstream domain (str "http://" (urly/host-of host) ":" port))
         (swap! apps assoc app-name {:image image
                                     :tag tag
                                     :user-id (:id user)
