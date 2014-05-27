@@ -15,9 +15,6 @@
 (defn generate-host-port [host]
   (+ 10000 (rand-int 1000)))
 
-(defn port-binding [host-port container-port]
-  {(str container-port "/tcp") [{"HostPort" (str host-port)}]})
-
 (defn app->id [app-name user]
   (get-in @apps [(keyword app-name) :instances 0 :id]))
 
@@ -25,7 +22,7 @@
   (let [app-name (keyword app-name)
         cli (choose-client)
         host-port (generate-host-port (.host cli))
-        port-bindings (port-binding host-port port)]
+        port-bindings {host-port port}]
     (if (nil? (app-name @apps))
       (let [id (docker/run cli image :tag tag
                                      :cmd command
