@@ -9,6 +9,7 @@
                  [cheshire "5.3.1"]
                  [compojure "1.1.8"]
                  [clojurewerkz/urly "1.0.0"]
+                 [com.taoensso/carmine "2.6.2"]
                  [com.cemerick/friend "0.2.1"
                   :exclusions [org.apache.httpcomponents/httpclient]]
                  [k2nr/docker "0.0.2-SNAPSHOT"]
