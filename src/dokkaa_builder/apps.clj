@@ -1,6 +1,7 @@
 (ns dokkaa-builder.apps
   (:require [k2nr.docker.core :as docker]
-            [k2nr.docker.container :as container]))
+            [k2nr.docker.container :as container]
+            [dokkaa-builder.apps-router :as router]))
 
 (def apps (atom {}))
 
@@ -9,19 +10,30 @@
   []
   (docker/make-client "localhost:4243"))
 
+(defn generate-host-port [host]
+  (+ 10000 (rand 1000)))
+
+(defn port-binding [host-port container-port]
+  (str host-port ":" container-port))
+
 (defn app->id [app-name user]
   (get-in @apps [(keyword app-name) :instances 0 :id]))
 
-(defn create [app-name user image & {:keys [tag command port-bindings]}]
+(defn create [app-name user image & {:keys [tag command port]}]
   (let [app-name (keyword app-name)
-        cli (choose-client)]
+        cli (choose-client)
+        port-bindings [(port-binding (generate-host-port (.host cli))
+                                     port)]]
     (if (nil? (app-name @apps))
       (let [id (docker/run cli image :tag tag
                                      :cmd command
-                                     :port-bindings port-bindings)]
+                                     :port-bindings port-bindings)
+            domain (str (name app-name) ".localhost")]
+        (router/add-domain domain (str (.host cli) ":" port))
         (swap! apps assoc app-name {:image image
                                     :tag tag
                                     :user-id (:id user)
+                                    :domains [domain]
                                     :instances [{:host (.host cli)
                                                  :id id
                                                  :port-binding port-bindings}]})

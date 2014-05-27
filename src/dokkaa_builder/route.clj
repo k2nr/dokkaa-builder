@@ -18,7 +18,7 @@
       (apps/create app-name user image
                    :tag tag
                    :command command
-                   :port-bindings [(str port-bind-to ":" port)])
+                   :port port)
       {:status 401, :body "token is invalid"})))
 
 (defn update-app [req]
