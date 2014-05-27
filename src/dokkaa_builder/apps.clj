@@ -13,10 +13,10 @@
   (docker/make-client "127.0.0.1:4243"))
 
 (defn generate-host-port [host]
-  (+ 10000 (rand 1000)))
+  (+ 10000 (rand-int 1000)))
 
 (defn port-binding [host-port container-port]
-  (str host-port ":" container-port))
+  {(str container-port "/tcp") [{"HostPort" (str host-port)}]})
 
 (defn app->id [app-name user]
   (get-in @apps [(keyword app-name) :instances 0 :id]))
@@ -24,8 +24,8 @@
 (defn create [app-name user image & {:keys [tag command port]}]
   (let [app-name (keyword app-name)
         cli (choose-client)
-        port-bindings [(port-binding (generate-host-port (.host cli))
-                                     port)]]
+        host-port (generate-host-port (.host cli))
+        port-bindings (port-binding host-port port)]
     (if (nil? (app-name @apps))
       (let [id (docker/run cli image :tag tag
                                      :cmd command
@@ -33,7 +33,7 @@
             host (urly/url-like (str "http://" (.host cli)))
             domain (str (name app-name) "." (config/domain-name))]
         (router/add-domain domain)
-        (router/add-upstream domain (str "http://" (urly/host-of host) ":" port))
+        (router/add-upstream domain (str "http://" (urly/host-of host) ":" host-port))
         (swap! apps assoc app-name {:image image
                                     :tag tag
                                     :user-id (:id user)
