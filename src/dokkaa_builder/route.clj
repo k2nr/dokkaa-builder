@@ -13,7 +13,6 @@
         command (get-in req [:params :command])
         port  (get-in req [:params :port])
         port-bind-to (+ (rand-int 1000) 10000)]
-    (println "port-bind-to: " port-bind-to)
     (if user
       (apps/create app-name user image
                    :tag tag

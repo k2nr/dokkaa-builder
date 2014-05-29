@@ -7,40 +7,44 @@
 
 (def apps (atom {}))
 
-(defn choose-client
+(defn- generate-host-port [host]
+  (+ 10000 (rand-int 1000)))
+
+(defn- choose-backends
   "Randomly choose docker backend"
   []
-  (docker/make-client "127.0.0.1:4243"))
+  (let [cli (docker/make-client "127.0.0.1:4243")]
+    [{:client cli
+      :port (generate-host-port (.host cli))}]))
 
-(defn generate-host-port [host]
-  (+ 10000 (rand-int 1000)))
+(defn- default-frontend-url [app-name]
+  (str app-name "." (config/domain-name)))
+
+(defn- upstream-url [cli port]
+  (let [host (urly/url-like (str "http://" (.host cli)))
+        url (str "http://" (urly/host-of host) ":" port)]
+    url))
 
 (defn app->id [app-name user]
   (get-in @apps [(keyword app-name) :instances 0 :id]))
 
 (defn create [app-name user image & {:keys [tag command port]}]
-  (let [app-name (keyword app-name)
-        cli (choose-client)
-        host-port (generate-host-port (.host cli))
-        port-bindings {host-port port}]
-    (if (nil? (app-name @apps))
-      (let [id (docker/run cli image :tag tag
-                                     :cmd command
-                                     :port-bindings port-bindings)
-            host (urly/url-like (str "http://" (.host cli)))
-            domain (str (name app-name) "." (config/domain-name))]
-        (router/add-domain domain)
-        (router/add-upstream domain (str "http://" (urly/host-of host) ":" host-port))
-        (swap! apps assoc app-name {:image image
-                                    :tag tag
-                                    :user-id (:id user)
-                                    :domains [domain]
-                                    :instances [{:host (.host cli)
-                                                 :id id
-                                                 :port-binding port-bindings}]})
-        id)
-      {:status 403
-       :body (str "app " (name app-name) " already exists\n")})))
+  (let [backends (choose-backends)
+        front-url (default-frontend-url app-name)
+        instances (doall (for [{cli :client host-port :port} backends]
+                           (let [id (docker/run cli image
+                                      :tag tag
+                                      :cmd command
+                                      :port-bindings {host-port port})
+                                 upstream (upstream-url cli host-port)]
+                             {:id id, :host upstream})))]
+    (apply router/add-domain front-url (map :host instances))
+    (swap! apps assoc (keyword app-name) {:image      image
+                                          :tag        tag
+                                          :user-id    (:id user)
+                                          :front-urls [front-url]
+                                          :instances  instances})
+    nil))
 
 (defn update [req]
   )
@@ -54,7 +58,7 @@
         (container/remove cli id)))))
 
 (defn logs [app-name user]
-  (let [cli (choose-client)
+  (let [{cli :client} (first (choose-backends))
         resp (container/logs cli (app->id app-name user) :stdout true :stderr true)]
     (map #(str (name (:stream-type %))
                ": "

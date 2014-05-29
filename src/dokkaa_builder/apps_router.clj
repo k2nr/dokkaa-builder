@@ -4,14 +4,15 @@
 (def server1-conn {:pool {} :spec {:host "127.0.0.1", :port 6379}})
 (defmacro wcar* [& body] `(redis/wcar server1-conn ~@body))
 
-(defn add-domain [domain]
-  (wcar* (redis/rpush (str "frontend:" domain) domain)))
-
 (defn add-upstream
   ([domain upstream]
      (wcar* (redis/rpush (str "frontend:" domain) upstream)))
   ([domain upstream & rest]
      (wcar* (apply redis/rpush domain upstream rest))))
+
+(defn add-domain [domain & upstreams]
+  (wcar* (redis/rpush (str "frontend:" domain) domain)
+         (when upstreams (apply add-upstream domain upstreams))))
 
 (defn delete-upstream [domain upstream]
   (wcar*
