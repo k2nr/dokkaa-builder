@@ -5,6 +5,8 @@
             [dokkaa-builder.config :as config]
             [clojurewerkz.urly.core :as urly]))
 
+(declare delete-instances)
+
 (def apps (atom {}))
 
 (defn- generate-host-port [host]

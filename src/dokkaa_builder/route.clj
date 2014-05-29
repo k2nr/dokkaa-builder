@@ -35,7 +35,9 @@
   (let [app-name (get-in req [:route-params :app])
         token (get-in req [:params :token])
         user (auth/token->user token)]
-    (apps/logs app-name user)))
+    (if user
+      (apps/logs app-name user)
+      {:status 401, :body "token is invalid"})))
 
 (defn ping [req]
   {:status 200})
