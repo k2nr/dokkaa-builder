@@ -51,11 +51,14 @@
 
 (defn delete [app-name user]
   (let [instances (get-in @apps [(keyword app-name) :instances])]
-    (doseq [i instances]
-      (let [{host :host, id :id} i
-            cli (docker/make-client host)]
-        (container/stop cli id)
-        (container/remove cli id)))))
+    (delete-instances instances)))
+
+(defn delete-instances [instances]
+  (doseq [i instances]
+    (let [{host :host, id :id} i
+          cli (docker/make-client (str (urly/host-of (urly/url-like host)) ":4243"))]
+      (container/stop cli id)
+      (container/remove cli id))))
 
 (defn logs [app-name user]
   (let [{cli :client} (first (choose-backends))

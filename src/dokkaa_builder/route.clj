@@ -27,7 +27,9 @@
   (let [app-name (get-in req [:route-params :app])
         token (get-in req [:params :token])
         user (auth/token->user token)]
-    (apps/delete app-name user)))
+    (if user
+      (apps/delete app-name user)
+      {:status 401, :body "token is invalid"})))
 
 (defn logs [req]
   (let [app-name (get-in req [:route-params :app])
