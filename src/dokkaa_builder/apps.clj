@@ -54,7 +54,10 @@
 
 (defn delete [app-name user]
   (let [instances (get-in @apps [(keyword app-name) :instances])]
-    (delete-instances instances)))
+    (delete-instances instances)
+    (swap! apps dissoc (keyword app-name))
+    (router/delete-domain (default-frontend-url app-name))
+    nil))
 
 (defn delete-instances [instances]
   (doseq [i instances]
