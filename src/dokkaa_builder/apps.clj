@@ -31,19 +31,22 @@
 (defn create [app-name user image & {:keys [tag command port]}]
   (let [backends (choose-backends)
         front-url (default-frontend-url app-name)
-        instances (doall (for [{cli :client host-port :port} backends]
+        old-isntances (get-in @apps [(keyword app-name) :instances])
+        new-instances (doall (for [{cli :client host-port :port} backends]
                            (let [id (docker/run cli image
                                       :tag tag
                                       :cmd command
                                       :port-bindings {host-port port})
                                  upstream (upstream-url cli host-port)]
                              {:id id, :host upstream})))]
-    (apply router/add-domain front-url (map :host instances))
+    (when old-isntances (router/delete-domain front-url))
+    (apply router/add-domain front-url (map :host new-instances))
     (swap! apps assoc (keyword app-name) {:image      image
                                           :tag        tag
                                           :user-id    (:id user)
                                           :front-urls [front-url]
-                                          :instances  instances})
+                                          :instances  new-instances})
+    (when old-isntances (delete-instances old-isntances))
     nil))
 
 (defn update [req]
