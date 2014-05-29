@@ -32,13 +32,13 @@
   (let [backends (choose-backends)
         front-url (default-frontend-url app-name)
         old-isntances (get-in @apps [(keyword app-name) :instances])
-        new-instances (doall (for [{cli :client host-port :port} backends]
-                           (let [id (docker/run cli image
-                                      :tag tag
-                                      :cmd command
-                                      :port-bindings {host-port port})
-                                 upstream (upstream-url cli host-port)]
-                             {:id id, :host upstream})))]
+        new-instances (vec (for [{cli :client host-port :port} backends]
+                             (let [id (docker/run cli image
+                                        :tag tag
+                                        :cmd command
+                                        :port-bindings {host-port port})
+                                   upstream (upstream-url cli host-port)]
+                               {:id id, :host upstream})))]
     (when old-isntances (router/delete-domain front-url))
     (apply router/add-domain front-url (map :host new-instances))
     (swap! apps assoc (keyword app-name) {:image      image
