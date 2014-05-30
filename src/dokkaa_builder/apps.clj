@@ -9,9 +9,6 @@
 
 (def apps (atom {}))
 
-(defn- generate-host-port [host]
-  (+ 10000 (rand-int 1000)))
-
 (defn- pick-backends
   "Randomly choose docker backend"
   []

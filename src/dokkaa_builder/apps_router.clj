@@ -1,5 +1,6 @@
 (ns dokkaa-builder.apps-router
-  (:require [taoensso.carmine :as redis]))
+  (:require [taoensso.carmine :as redis]
+            [clojure.set :as set]))
 
 (def server1-conn {:pool {} :spec {:host "127.0.0.1", :port 6379}})
 (defmacro wcar* [& body] `(redis/wcar server1-conn ~@body))
@@ -26,3 +27,17 @@
     (if upstreams
       (mapv #(hash-map % (wcar* (redis/lrange % 0 -1))) ds)
       ds)))
+
+(defn used-ports [host]
+  (let [key (str "instances:" host ":port")]
+    (set (map #(Integer. %) (wcar* (redis/smembers key))))))
+
+(defn- all-ports []
+  (set (range 10000 20000)))
+
+(defn generate-host-port [host]
+  (let [port (first (set/difference (all-ports) (used-ports host)))
+        key  (str "instances:" host ":port")
+        added? (wcar* (redis/sadd key port))]
+    (loop []
+      (if added? port (recur)))))
