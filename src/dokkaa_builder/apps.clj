@@ -3,18 +3,27 @@
             [k2nr.docker.container :as container]
             [dokkaa-builder.apps-router :as router]
             [dokkaa-builder.config :as config]
-            [clojurewerkz.urly.core :as urly]))
+            [clojurewerkz.urly.core :as urly]
+            [dokkaa-builder.redis :refer [wcar*]]
+            [taoensso.carmine :as redis]))
 
 (declare delete-instances)
 
-(def apps (atom {}))
+(defn app [user app-name]
+  (wcar* (redis/get (str "apps:" app-name))))
+
+(defn set-app [app-name app]
+  (wcar* (redis/set (str "apps:" app-name) app)))
+
+(defn delete-app [app-name]
+  (wcar* (redis/del (str "apps:" app-name))))
 
 (defn- pick-backends
   "Randomly choose docker backend"
   []
   (let [cli (docker/make-client "127.0.0.1:4243")]
     [{:client cli
-      :port (generate-host-port (.host cli))}]))
+      :port (router/generate-host-port (.host cli))}]))
 
 (defn- default-frontend-url [app-name]
   (str app-name "." (config/domain-name)))
@@ -24,13 +33,14 @@
         url (str "http://" (urly/host-of host) ":" port)]
     url))
 
-(defn app->id [app-name user]
-  (get-in @apps [(keyword app-name) :instances 0 :id]))
+(defn instances [app-name]
+  (let [app (wcar* (redis/get (str "apps:" app-name)))]
+    (:instances app)))
 
 (defn create [app-name user image & {:keys [tag command port]}]
   (let [backends (pick-backends)
         front-url (default-frontend-url app-name)
-        old-isntances (get-in @apps [(keyword app-name) :instances])
+        old-isntances (instances app-name)
         new-instances (vec (for [{cli :client host-port :port} backends]
                              (let [id (docker/run cli image
                                         :tag tag
@@ -40,11 +50,11 @@
                                {:id id, :host upstream})))]
     (when old-isntances (router/delete-domain front-url))
     (apply router/add-domain front-url (map :host new-instances))
-    (swap! apps assoc (keyword app-name) {:image      image
-                                          :tag        tag
-                                          :user-id    (:id user)
-                                          :front-urls [front-url]
-                                          :instances  new-instances})
+    (set-app app-name {:image      image
+                       :tag        tag
+                       :user-id    (:id user)
+                       :front-urls [front-url]
+                       :instances  new-instances})
     (when old-isntances (delete-instances old-isntances))
     nil))
 
@@ -52,9 +62,9 @@
   )
 
 (defn delete [app-name user]
-  (let [instances (get-in @apps [(keyword app-name) :instances])]
-    (delete-instances instances)
-    (swap! apps dissoc (keyword app-name))
+  (let [is (instances app-name)]
+    (delete-instances is)
+    (delete-app app-name)
     (router/delete-domain (default-frontend-url app-name))
     nil))
 
@@ -67,7 +77,7 @@
 
 (defn logs [app-name user]
   (let [{cli :client} (first (pick-backends))
-        resp (container/logs cli (app->id app-name user) :stdout true :stderr true)]
+        resp (container/logs cli (-> app-name instances first :id) :stdout true :stderr true)]
     (map #(str (name (:stream-type %))
                ": "
                (:body %)) resp)))
