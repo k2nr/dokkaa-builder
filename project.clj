@@ -12,7 +12,8 @@
                  [com.taoensso/carmine "2.6.2"]
                  [com.cemerick/friend "0.2.1"
                   :exclusions [org.apache.httpcomponents/httpclient]]
-                 [friend-oauth2 "0.1.1"]
+                 [friend-oauth2 "0.1.1"
+                  :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
                  [ring "1.2.2"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]
