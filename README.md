@@ -1,6 +1,8 @@
+[![Build Status](https://travis-ci.org/k2nr/dokkaa-builder.svg?branch=master)](https://travis-ci.org/k2nr/dokkaa-builder)
+
 # dokkaa-builder
 
-A Clojure library designed to ... well, that part is up to you.
+TODO
 
 ## Usage
 
