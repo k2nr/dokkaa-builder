@@ -22,5 +22,10 @@
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]
             [lein-cljsbuild "0.3.0"]]
+  :source-paths ["src/clj"]
+  :cljsbuild {:builds [{:source-paths ["src/cljs"]
+                        :compiler {:output-to "resources/public/js/main.js"}
+                        :optimizations :whitespace
+                        :prety-print true}]}
   :main dokkaa-builder.core
   :aot [dokkaa-builder.core])
