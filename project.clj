@@ -9,7 +9,9 @@
                  [cheshire "5.3.1"]
                  [clj-http "0.9.2"]
                  [compojure "1.1.8"]
-                 [clojurewerkz/urly "1.0.0"]
+                 [com.google.guava/guava "17.0"]
+                 [clojurewerkz/urly "1.0.0"
+                  :exclusions [com.google.guava/guava]]
                  [com.taoensso/carmine "2.6.2"]
                  [com.cemerick/friend "0.2.1"
                   :exclusions [org.apache.httpcomponents/httpclient]]
@@ -25,17 +27,15 @@
   :plugins [[lein-environ "0.5.0"]
             [lein-cljsbuild "1.0.3"]]
   :source-paths ["src/clj"]
-  :cljsbuild {:builds [{:id "dev"
+  :cljsbuild {
+              :builds [{:id "release"
                         :source-paths ["src/cljs"]
-                        :compiler {:output-to "resources/public/js/main.js"
-                                   :optimizations :whitespace
-                                   :prety-print true
-                                   :source-map true}}
-                       {:id "release"
-                        :source-paths ["src/cljs"]
-                        :compiler {:output-to "resources/public/js/main.js"
+                        :compiler {
+                                   :output-to "resources/public/js/app.js"
                                    :optimizations :advanced
-                                   :prety-print false
+                                   :elide-asserts true
+                                   :pretty-print false
+                                   :output-wrapper false
                                    :preamble ["react/react.min.js"]
                                    :externs ["react/externs/react.js"]}}]}
   :main dokkaa-builder.core
