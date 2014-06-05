@@ -89,7 +89,6 @@
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/"))))
 
 (defroutes routes
-  (GET "/" req (friend/authorize #{:user} (fn [req] "index")))
   (GET "/_ping"  [] ping)
   (context "/users" req users-routes)
   (context "/apps/:app" req apps-routes)
