@@ -17,8 +17,9 @@
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
                  [ring "1.3.0"]
-                 [org.clojure/clojurescript "0.0-2173"]
-                 [om "0.6.4"]]
+                 [org.clojure/clojurescript "0.0-2227"]
+                 [om "0.6.4"]
+                 [sablono "0.2.17"]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]
