@@ -7,7 +7,7 @@
                  [environ "0.5.0"]
                  [http-kit "2.1.18"]
                  [cheshire "5.3.1"]
-                 [clj-http "0.9.1"]
+                 [clj-http "0.9.2"]
                  [compojure "1.1.8"]
                  [clojurewerkz/urly "1.0.0"]
                  [com.taoensso/carmine "2.6.2"]
@@ -16,9 +16,8 @@
                  [friend-oauth2 "0.1.1"
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
-                 [ring "1.2.2"]]
-  :profiles {:dev {:dependencies [[midje "1.6.3"]
-                                  [ring/ring-devel "1.2.2"]
+                 [ring "1.3.0"]]
+  :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]]
   :main dokkaa-builder.core
