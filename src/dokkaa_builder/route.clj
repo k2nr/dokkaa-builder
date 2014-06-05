@@ -1,10 +1,11 @@
 (ns dokkaa-builder.route
   (:require [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
+            [compojure.handler :refer [site]]
             [compojure.route :refer [files not-found]]
             [dokkaa-builder.apps :as apps]
             [dokkaa-builder.auth :as auth]
-            [friend-oauth2.workflow :as oauth2]
-            [dokkaa-builder.middleware.auth :as mauth]))
+            [cemerick.friend :as friend]
+            [dokkaa-builder.oauth.github :as github]))
 
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
@@ -61,3 +62,8 @@
   (context "/users" req (-> users-routes
                             mauth/friend-middleware))
   (context "/apps/:app" req apps-routes))
+
+(def app (-> routes
+             (github/authenticate
+              :credential-fn (fn [token]))
+             site))

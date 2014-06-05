@@ -2,7 +2,6 @@
   (:gen-class)
   (:require [environ.core :refer [env]]
             [org.httpkit.server :refer [run-server]]
-            [compojure.handler :refer [site]]
             [ring.middleware.reload :as reload]
             [dokkaa-builder.route :as route]
             [dokkaa-builder.util :as util]))
@@ -17,14 +16,11 @@
     (@server :timeout 100)
     (reset! server nil)))
 
-(def app (-> route/routes
-             (site)))
-
 (defn start-server
   ([] (start-server 8080))
   ([port] (let [myapp (if (util/in-dev?)
-                        (reload/wrap-reload app)
-                        app)]
+                        (reload/wrap-reload route/app)
+                        route/app)]
             (reset! server (run-server myapp {:port port}))
             (println "Listening on" port))))
 
