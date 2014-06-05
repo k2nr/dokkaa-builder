@@ -10,3 +10,4 @@ pom.xml.asc
 .vagrant
 *.log
 dump.rdb
+/resources/public/js/app.js
