@@ -24,9 +24,18 @@
   :plugins [[lein-environ "0.5.0"]
             [lein-cljsbuild "1.0.3"]]
   :source-paths ["src/clj"]
-  :cljsbuild {:builds [{:source-paths ["src/cljs"]
-                        :compiler {:output-to "resources/public/js/main.js"}
-                        :optimizations :whitespace
-                        :prety-print true}]}
+  :cljsbuild {:builds [{:id "dev"
+                        :source-paths ["src/cljs"]
+                        :compiler {:output-to "resources/public/js/main.js"
+                                   :optimizations :whitespace
+                                   :prety-print true
+                                   :source-map true}}
+                       {:id "release"
+                        :source-paths ["src/cljs"]
+                        :compiler {:output-to "resources/public/js/main.js"
+                                   :optimizations :advanced
+                                   :prety-print false
+                                   :preamble ["react/react.min.js"]
+                                   :externs ["react/externs/react.js"]}}]}
   :main dokkaa-builder.core
   :aot [dokkaa-builder.core])
