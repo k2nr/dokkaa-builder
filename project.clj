@@ -17,11 +17,12 @@
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
                  [ring "1.3.0"]
+                 [org.clojure/clojurescript "0.0-2173"]
                  [om "0.6.4"]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]
-            [lein-cljsbuild "0.3.0"]]
+            [lein-cljsbuild "1.0.3"]]
   :source-paths ["src/clj"]
   :cljsbuild {:builds [{:source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/main.js"}
