@@ -16,9 +16,11 @@
                  [friend-oauth2 "0.1.1"
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
-                 [ring "1.3.0"]]
+                 [ring "1.3.0"]
+                 [om "0.6.4"]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
-  :plugins [[lein-environ "0.5.0"]]
+  :plugins [[lein-environ "0.5.0"]
+            [lein-cljsbuild "0.3.0"]]
   :main dokkaa-builder.core
   :aot [dokkaa-builder.core])
