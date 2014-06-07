@@ -28,15 +28,19 @@
   :plugins [[lein-environ "0.5.0"]
             [lein-cljsbuild "1.0.3"]
             [com.cemerick/austin "0.1.4"]]
-  :source-paths ["src/clj"]
-  :cljsbuild {:builds [{:id "release"
+  :source-paths ["src/clj" "src/cljs"]
+  :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
-                        :compiler {
-                                   :output-to "resources/public/js/app.js"
+                        :compiler {:output-to "target/classes/public/app.js"
+                                   :optimizations :simple
+                                   :pretty-print true
+                                   :preamble ["react/react.min.js"]
+                                   :externs ["react/externs/react.js"]}}
+                       {:id "release"
+                        :source-paths ["src/cljs"]
+                        :compiler {:output-to "target/classes/public/app.js"
                                    :optimizations :advanced
-                                   :elide-asserts true
                                    :pretty-print false
-                                   :output-wrapper false
                                    :preamble ["react/react.min.js"]
                                    :externs ["react/externs/react.js"]}}]}
   :main dokkaa-builder.core
