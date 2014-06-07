@@ -8,6 +8,7 @@
                  [http-kit "2.1.18"]
                  [cheshire "5.3.1"]
                  [clj-http "0.9.2"]
+                 [hiccup "1.0.5"]
                  [compojure "1.1.8"]
                  [com.google.guava/guava "17.0"]
                  [clojurewerkz/urly "1.0.0"
@@ -25,10 +26,10 @@
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]
-            [lein-cljsbuild "1.0.3"]]
+            [lein-cljsbuild "1.0.3"]
+            [com.cemerick/austin "0.1.4"]]
   :source-paths ["src/clj"]
-  :cljsbuild {
-              :builds [{:id "release"
+  :cljsbuild {:builds [{:id "release"
                         :source-paths ["src/cljs"]
                         :compiler {
                                    :output-to "resources/public/js/app.js"
