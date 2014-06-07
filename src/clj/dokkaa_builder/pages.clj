@@ -8,8 +8,10 @@
   (page/html5
    [:head]
    [:body body]
-   (page/include-js "/js/app.js")
-   (page/include-css "/css/style.css")))
+   (page/include-js "/app.js")
+   (page/include-css "/style.css")
+   (when-let [repl (browser-connected-repl-js)]
+     [:script repl])))
 
 (defn index []
   (layout
