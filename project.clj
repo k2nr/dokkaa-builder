@@ -7,7 +7,10 @@
                  [environ "0.5.0"]
                  [http-kit "2.1.18"]
                  [cheshire "5.3.1"]
-                 [clj-http "0.9.2"]
+                 ; clj-http uses tools.read 0.8.4. with this version compiling cljs will fail.
+                 ; I don't know why but using 0.8.3 explicitly works for now
+                 [org.clojure/tools.reader "0.8.3"]
+                 [clj-http "0.9.2" :exclusions [org.clojure/tools.reader]]
                  [hiccup "1.0.5"]
                  [compojure "1.1.8"]
                  [com.google.guava/guava "17.0"]
