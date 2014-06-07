@@ -1,5 +1,5 @@
 (ns dokkaa-builder.pages
-  (:require [cemerick.austin.repls :refer (browser-connected-repl-js)]
+  (:require [cemerick.austin.repls :refer [browser-connected-repl-js]]
             [hiccup.core :refer :all]
             [hiccup.page :as page]
             [hiccup.util :as util]))
@@ -16,5 +16,3 @@
 (defn index []
   (layout
    [:div {:id "my-app"}]))
-
-(index)
