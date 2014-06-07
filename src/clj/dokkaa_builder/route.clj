@@ -4,6 +4,7 @@
             [compojure.route :refer [resources files not-found]]
             [dokkaa-builder.apps :as apps]
             [dokkaa-builder.auth :as auth]
+            [dokkaa-builder.pages :as pages]
             [clj-http.client :as http]
             [cheshire.core :as j]
             [cemerick.friend :as friend]
@@ -89,6 +90,7 @@
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/"))))
 
 (defroutes routes
+  (GET "/" [] (pages/index))
   (GET "/_ping"  [] ping)
   (context "/users" req users-routes)
   (context "/apps/:app" req apps-routes)
