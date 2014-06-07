@@ -4,7 +4,9 @@
             [org.httpkit.server :refer [run-server]]
             [ring.middleware.reload :as reload]
             [dokkaa-builder.route :as route]
-            [dokkaa-builder.util :as util]))
+            [dokkaa-builder.util :as util]
+            [cemerick.austin :as austin]
+            [cemerick.austin.repls :as brepl]))
 
 (defonce server (atom nil))
 
@@ -31,3 +33,9 @@
 (defn -main [& args]
   (start-server (Integer. (or (env :port) "8080")))
   (println "Starting Server..."))
+
+;; connect to browser repl
+(when (util/in-dev?)
+  (defn cljs-repl []
+    (let [repl-env (reset! brepl/browser-repl-env (austin/repl-env))]
+      (brepl/cljs-repl repl-env))))
