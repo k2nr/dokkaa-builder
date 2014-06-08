@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/core.async "0.1.303.0-886421-alpha"]
                  [environ "0.5.0"]
                  [http-kit "2.1.18"]
                  [cheshire "5.3.1"]
@@ -35,7 +36,7 @@
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "target/classes/public/app.js"
-                                   :optimizations :simple
+                                   :optimizations :whitespace
                                    :pretty-print true
                                    :preamble ["react/react.min.js"]
                                    :externs ["react/externs/react.js"]}}
