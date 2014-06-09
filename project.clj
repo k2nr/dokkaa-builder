@@ -26,7 +26,11 @@
                  [ring "1.3.0"]
                  [org.clojure/clojurescript "0.0-2227"]
                  [om "0.6.4"]
-                 [sablono "0.2.17"]]
+                 [sablono "0.2.17"]
+                 [cljs-http "0.1.11"
+                  :exclusions [org.clojure/core.async org.clojure/clojurescript]]
+                 [secretary "1.1.1"
+                  :exclusions [org.clojure/clojure org.clojure/clojurescript]]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :plugins [[lein-environ "0.5.0"]
