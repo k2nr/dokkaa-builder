@@ -58,6 +58,14 @@
     (pages/index)
     "<a href=\"/oauth/github\">Login By GitHub</a>"))
 
+(defn status-page [request]
+  (let [count (:count (:session request) 0)
+        session (assoc (:session request) :count (inc count))]
+    (-> (ring.util.response/response
+         (str "<p>We've hit the session page " (:count session)
+              " times.</p><p>The current session: " session "</p>"))
+        (assoc :session session))))
+
 (defroutes apps-routes
   (GET    "/" req (get-apps req))
   (GET    "/:app/logs" req (logs req))
@@ -69,6 +77,7 @@
   (GET "/" req (index req))
   (GET "/_ping"  [] ping)
   (context "/apps/" req apps-routes)
+  (GET "/status" req (status-page req))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (not-found "404 Not Found"))
