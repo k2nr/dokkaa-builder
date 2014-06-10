@@ -15,4 +15,4 @@
 
 (defn index []
   (layout
-   [:div {:id "my-app"}]))
+   [:div {:id "app"}]))
