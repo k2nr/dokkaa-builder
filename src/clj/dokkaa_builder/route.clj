@@ -39,6 +39,11 @@
         repos (j/parse-string (:body response) true)]
     repos))
 
+(defn get-apps [req]
+  {:status 200
+   :body (j/encode {"apps1" {:id "123"}
+                    "apps2" {:id "234"}})})
+
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
         token (get-in req [:params :token])
@@ -77,11 +82,17 @@
 (defn ping [req]
   {:status 200})
 
+(defn index [req]
+  (if (friend/authorized? [:user] req)
+    (pages/index)
+    "<a href=\"/oauth/github\">Login By GitHub</a>"))
+
 (defroutes apps-routes
-  (GET    "/logs" req (logs req))
-  (POST   "/" req (create-app req))
-  (PUT    "/" req (update-app req))
-  (DELETE "/" req (delete-app req)))
+  (GET    "/" req (get-apps req))
+  (GET    "/:app/logs" req (logs req))
+  (POST   "/:app" req (create-app req))
+  (PUT    "/:app" req (update-app req))
+  (DELETE "/:app" req (delete-app req)))
 
 (defroutes users-routes
   (GET "/" request "<a href=\"/users/repos\">My Github Repositories</a><br><a href=\"/users/status\">Status</a>")
@@ -90,10 +101,10 @@
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/"))))
 
 (defroutes routes
-  (GET "/" [] (pages/index))
+  (GET "/" req (index req))
   (GET "/_ping"  [] ping)
   (context "/users" req users-routes)
-  (context "/apps/:app" req apps-routes)
+  (context "/apps/" req apps-routes)
   (resources "/")
   (not-found "404 Not Found"))
 
