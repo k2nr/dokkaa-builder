@@ -1,5 +1,6 @@
 (ns dokkaa-builder.auth
-  (:require [cemerick.friend.credentials :as creds]))
+  (:require [cemerick.friend :as friend]
+   [cemerick.friend.credentials :as creds]))
 
 ;; these atoms are in-memory databases just for develoment
 (def users (atom {1 {:id 1
@@ -25,3 +26,6 @@
   (get-in
    (filterv #(= (:username (second %)) user-name) @users)
    [0 1]))
+
+(defn current-identity [m]
+  (:current (friend/identity m)))
