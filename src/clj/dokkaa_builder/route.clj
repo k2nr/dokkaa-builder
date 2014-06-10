@@ -5,7 +5,6 @@
             [dokkaa-builder.apps :as apps]
             [dokkaa-builder.auth :as auth]
             [dokkaa-builder.pages :as pages]
-            [clj-http.client :as http]
             [cheshire.core :as j]
             [cemerick.friend :as friend]
             [dokkaa-builder.oauth.github :as github]))
@@ -73,11 +72,15 @@
   (PUT    "/:app" req (update-app req))
   (DELETE "/:app" req (delete-app req)))
 
+(defroutes users-routes
+  )
+
 (defroutes routes
   (GET "/" req (index req))
   (GET "/_ping"  [] ping)
-  (context "/apps/" req apps-routes)
   (GET "/status" req (status-page req))
+  (context "/apps" req (friend/wrap-authorize apps-routes #{:user}))
+  (context "/user" req (friend/wrap-authorize users-routes))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (not-found "404 Not Found"))
