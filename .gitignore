@@ -13,3 +13,4 @@ dump.rdb
 /resources/public/js/app.js
 /.repl
 /out
+*.etcd
