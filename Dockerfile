@@ -16,6 +16,6 @@ WORKDIR /app
 ADD src /app/src
 ADD project.clj /app/project.clj
 ADD resources /app/resources
-RUN lein uberjar
+RUN lein do cljsbuild clean, cljsbuild once release, uberjar
 
 CMD ["java", "-jar", "target/dokkaa-builder-0.0.1-SNAPSHOT-standalone.jar"]
