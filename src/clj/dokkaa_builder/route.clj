@@ -22,12 +22,14 @@
         tag   (or (get-in req [:params :tag]) "latest")
         command (get-in req [:params :command])
         port  (get-in req [:params :port])
+        ps (get-in req [:params :ps])
         port-bind-to (+ (rand-int 1000) 10000)]
     (if user
       (apps/create app-name user image
                    :tag tag
                    :command command
-                   :port port)
+                   :port port
+                   :ps ps)
       {:status 401, :body "token is invalid"})))
 
 (defn update-app [req]

@@ -51,8 +51,9 @@
   (let [app (wcar* (redis/get (str "apps:" app-name)))]
     (:instances app)))
 
-(defn create [app-name user image & {:keys [tag command port]}]
-  (let [backends (pick-backends 1)
+(defn create [app-name user image & {:keys [tag command port ps]}]
+  (let [ps (or ps 1)
+        backends (pick-backends ps)
         front-url (default-frontend-url app-name)
         old-isntances (instances app-name)
         new-instances (vec (for [{cli :client host-port :port} backends]
