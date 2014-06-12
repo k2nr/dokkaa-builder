@@ -21,8 +21,8 @@
 (defn start-server
   ([] (start-server 8080))
   ([port] (let [myapp (if (util/in-dev?)
-                        (reload/wrap-reload route/app)
-                        route/app)]
+                        (reload/wrap-reload #'route/app)
+                        #'route/app)]
             (reset! server (run-server myapp {:port port}))
             (println "Listening on" port))))
 
