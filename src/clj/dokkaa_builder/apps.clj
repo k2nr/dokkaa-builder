@@ -5,7 +5,9 @@
             [dokkaa-builder.config :as config]
             [clojurewerkz.urly.core :as urly]
             [dokkaa-builder.redis :refer [wcar*]]
-            [taoensso.carmine :as redis]))
+            [taoensso.carmine :as redis]
+            [dokkaa-builder.etcd :as etcd]
+            [dokkaa-builder.config :as config]))
 
 (declare delete-instances)
 
@@ -18,12 +20,23 @@
 (defn delete-app [app-name]
   (wcar* (redis/del (str "apps:" app-name))))
 
+(defn cluster-ips []
+  (try
+    (mapv #(-> %
+              (get "clientURL")
+              urly/url-like
+              urly/host-of)
+         (etcd/machines (str "http://" (config/docker-host-url) ":7001")))
+    (catch Exception e
+      (prn e)
+      ["127.0.0.1"])))
+
 (defn- pick-backends
   "Randomly choose docker backend"
   []
-  (let [cli (docker/make-client "127.0.0.1:4243")]
-    [{:client cli
-      :port (router/generate-host-port (.host cli))}]))
+  (mapv (fn [ip] {:client (docker/make-client (str ip ":4243"))
+                  :port   (router/generate-host-port ip)})
+        (cluster-ips)))
 
 (defn- default-frontend-url [app-name]
   (str app-name "." (config/domain-name)))
