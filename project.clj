@@ -23,6 +23,7 @@
                  [friend-oauth2 "0.1.1"
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
+                 [etcd-clojure "0.1.4"]
                  [ring "1.3.0"]
                  [org.clojure/clojurescript "0.0-2227"]
                  [om "0.6.4"]
