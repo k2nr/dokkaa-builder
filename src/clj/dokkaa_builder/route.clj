@@ -25,11 +25,12 @@
         ps (Integer. (or (get-in req [:params :ps]) 1))
         port-bind-to (+ (rand-int 1000) 10000)]
     (if user
-      (apps/create app-name user image
-                   :tag tag
-                   :command command
-                   :port port
-                   :ps ps)
+      {:status 200
+       :body (j/encode (apps/create app-name user image
+                                    :tag tag
+                                    :command command
+                                    :port port
+                                    :ps ps))}
       {:status 401, :body "token is invalid"})))
 
 (defn update-app [req]
@@ -40,7 +41,8 @@
         token (get-in req [:params :token])
         user (auth/token->user token)]
     (if user
-      (apps/delete app-name user)
+      {:status 200
+       :body (j/encode (apps/delete app-name user))}
       {:status 401, :body "token is invalid"})))
 
 (defn logs [req]
