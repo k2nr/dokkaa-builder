@@ -22,7 +22,7 @@
         tag   (or (get-in req [:params :tag]) "latest")
         command (get-in req [:params :command])
         port  (get-in req [:params :port])
-        ps (get-in req [:params :ps])
+        ps (Integer. (or (get-in req [:params :ps]) 1))
         port-bind-to (+ (rand-int 1000) 10000)]
     (if user
       (apps/create app-name user image
