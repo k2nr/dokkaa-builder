@@ -33,10 +33,12 @@
 
 (defn- pick-backends
   "Randomly choose docker backend"
-  []
+  [n]
   (mapv (fn [ip] {:client (docker/make-client (str ip ":4243"))
                   :port   (router/generate-host-port ip)})
-        (cluster-ips)))
+        (->> (cluster-ips)
+             shuffle
+             (take n))))
 
 (defn- default-frontend-url [app-name]
   (str app-name "." (config/domain-name)))
@@ -51,7 +53,7 @@
     (:instances app)))
 
 (defn create [app-name user image & {:keys [tag command port]}]
-  (let [backends (pick-backends)
+  (let [backends (pick-backends 1)
         front-url (default-frontend-url app-name)
         old-isntances (instances app-name)
         new-instances (vec (for [{cli :client host-port :port} backends]
@@ -89,7 +91,7 @@
       (container/remove cli id))))
 
 (defn logs [app-name user]
-  (let [{cli :client} (first (pick-backends))
+  (let [{cli :client} (first (pick-backends 1))
         resp (container/logs cli (-> app-name instances first :id) :stdout true :stderr true)]
     (map #(str (name (:stream-type %))
                ": "
