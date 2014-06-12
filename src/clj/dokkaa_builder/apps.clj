@@ -28,7 +28,6 @@
               urly/host-of)
          (etcd/machines (str "http://" (config/docker-host-url) ":7001")))
     (catch Exception e
-      (prn e)
       ["127.0.0.1"])))
 
 (defn- pick-backends
