@@ -25,6 +25,8 @@
                  [k2nr/docker "0.0.3-SNAPSHOT"]
                  [etcd-clojure "0.1.4"]
                  [ring "1.3.0"]
+                 ; not yet released but will use after released
+;                 [ring/ring-defaults "0.1.0-SNAPSHOT"]
                  [org.clojure/clojurescript "0.0-2227"]
                  [om "0.6.4"]
                  [sablono "0.2.17"]
