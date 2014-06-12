@@ -51,27 +51,39 @@
   (let [app (wcar* (redis/get (str "apps:" app-name)))]
     (:instances app)))
 
+(defn future-create-instance [cli host-port image & {:keys [port tag command]}]
+  (future
+    (let [id (docker/run cli image
+               :tag tag
+               :cmd command
+               :port-bindings {host-port port})
+          upstream (upstream-url cli host-port)]
+      {:id id, :host upstream})))
+
 (defn create [app-name user image & {:keys [tag command port ps]}]
   (let [ps (or ps 1)
         backends (pick-backends ps)
         front-url (default-frontend-url app-name)
         old-isntances (instances app-name)
-        new-instances (vec (for [{cli :client host-port :port} backends]
-                             (let [id (docker/run cli image
-                                        :tag tag
-                                        :cmd command
-                                        :port-bindings {host-port port})
-                                   upstream (upstream-url cli host-port)]
-                               {:id id, :host upstream})))]
-    (when old-isntances (router/delete-domain front-url))
-    (apply router/add-domain front-url (map :host new-instances))
-    (set-app app-name {:image      image
-                       :tag        tag
-                       :user-id    (:id user)
-                       :front-urls [front-url]
-                       :instances  new-instances})
-    (when old-isntances (delete-instances old-isntances))
-    nil))
+        app {:status  :creating
+             :image   image
+             :tag     tag
+             :user-id (:id user)}]
+    (set-app app-name app)
+    (future
+      (let [futures (doall (for [{cli :client host-port :port} backends]
+                             (future-create-instance cli host-port image
+                                                     :port port
+                                                     :tag tag
+                                                     :command command)))
+            new-instances (mapv deref futures)]
+      (when old-isntances (router/delete-domain front-url))
+      (apply router/add-domain front-url (map :host new-instances))
+      (set-app app-name (merge app {:status :running
+                                    :front-urls [front-url]
+                                    :instances  new-instances}))
+      (when old-isntances (delete-instances old-isntances))))
+    app))
 
 (defn update [req]
   )
