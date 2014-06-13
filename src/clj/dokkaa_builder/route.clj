@@ -18,6 +18,15 @@
        :body (j/encode (apps/apps user))}
       {:status 401, :body "token is invalid"})))
 
+(defn get-app [req]
+  (let [app-name (get-in req [:route-params :app])
+        token (get-in req [:params :token])
+        user  (auth/token->user token)]
+    (if user
+      {:status 200
+       :body (j/encode (apps/app user app-name))}
+      {:status 401, :body "token is invalid"})))
+
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
         token (get-in req [:params :token])
@@ -75,6 +84,7 @@
 
 (defroutes apps-routes
   (GET    "/" req (get-apps req))
+  (GET    "/:app" req (get-app req))
   (GET    "/:app/logs" req (logs req))
   (POST   "/:app" req (create-app req))
   (PUT    "/:app" req (update-app req))
