@@ -10,9 +10,13 @@
             [dokkaa-builder.oauth.github :as github]))
 
 (defn get-apps [req]
-  {:status 200
-   :body (j/encode {"apps1" {:id "123"}
-                    "apps2" {:id "234"}})})
+  (let [app-name (get-in req [:route-params :app])
+        token (get-in req [:params :token])
+        user  (auth/token->user token)]
+    (if user
+      {:status 200
+       :body (j/encode (apps/apps user))}
+      {:status 401, :body "token is invalid"})))
 
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
@@ -83,7 +87,7 @@
   (GET "/" req (index req))
   (GET "/_ping"  [] ping)
   (GET "/status" req (status-page req))
-  (context "/apps" req (friend/wrap-authorize apps-routes #{:user}))
+  (context "/apps" req apps-routes)
   (context "/user" req (friend/wrap-authorize users-routes))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
