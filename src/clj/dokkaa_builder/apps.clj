@@ -1,5 +1,6 @@
 (ns dokkaa-builder.apps
-  (:require [k2nr.docker.core :as docker]
+  (:require [clojure.string :as str]
+            [k2nr.docker.core :as docker]
             [k2nr.docker.container :as container]
             [dokkaa-builder.apps-router :as router]
             [dokkaa-builder.config :as config]
@@ -11,14 +12,22 @@
 
 (declare delete-instances)
 
+(defn- rkey [& args]
+  "construct redis key"
+  (str/join ":" args))
+
+(defn apps [user]
+  (let [keys (wcar* (redis/keys (rkey "users" (:id user) "apps" "*")))]
+    (mapv #(wcar* (redis/get %)) keys)))
+
 (defn app [user app-name]
-  (wcar* (redis/get (str "apps:" app-name))))
+  (wcar* (redis/get (rkey "users" (:id user) "apps" app-name))))
 
-(defn set-app [app-name app]
-  (wcar* (redis/set (str "apps:" app-name) app)))
+(defn set-app [user app-name app]
+  (wcar* (redis/set (rkey "users" (:id user) "apps" app-name) app)))
 
-(defn delete-app [app-name]
-  (wcar* (redis/del (str "apps:" app-name))))
+(defn delete-app [user app-name]
+  (wcar* (redis/del (rkey "users" (:id user) "apps" app-name))))
 
 (defn cluster-ips []
   (try
@@ -47,9 +56,8 @@
         url (str "http://" (urly/host-of host) ":" port)]
     url))
 
-(defn instances [app-name]
-  (let [app (wcar* (redis/get (str "apps:" app-name)))]
-    (:instances app)))
+(defn instances [user app-name]
+  (:instances (app user app-name)))
 
 (defn future-create-instance [cli host-port image & {:keys [port tag command]}]
   (future
@@ -64,12 +72,13 @@
   (let [ps (or ps 1)
         backends (pick-backends ps)
         front-url (default-frontend-url app-name)
-        old-isntances (instances app-name)
+        old-isntances (instances user app-name)
         app {:status  :creating
              :image   image
              :tag     tag
+             :ps      (count backends)
              :user-id (:id user)}]
-    (set-app app-name app)
+    (set-app user app-name app)
     (future
       (let [futures (doall (for [{cli :client host-port :port} backends]
                              (future-create-instance cli host-port image
@@ -77,21 +86,21 @@
                                                      :tag tag
                                                      :command command)))
             new-instances (mapv deref futures)]
-      (when old-isntances (router/delete-domain front-url))
-      (apply router/add-domain front-url (map :host new-instances))
-      (set-app app-name (merge app {:status :running
-                                    :front-urls [front-url]
-                                    :instances  new-instances}))
-      (when old-isntances (delete-instances old-isntances))))
+        (when old-isntances (router/delete-domain front-url))
+        (apply router/add-domain front-url (map :host new-instances))
+        (set-app user app-name (merge app {:status :running
+                                           :front-urls [front-url]
+                                           :instances  new-instances}))
+        (when old-isntances (delete-instances old-isntances))))
     app))
 
 (defn update [req]
   )
 
 (defn delete [app-name user]
-  (let [is (instances app-name)]
+  (let [is (instances user app-name)]
     (delete-instances is)
-    (delete-app app-name)
+    (delete-app user app-name)
     (router/delete-domain (default-frontend-url app-name))
     nil))
 
@@ -104,7 +113,7 @@
 
 (defn logs [app-name user]
   (let [{cli :client} (first (pick-backends 1))
-        resp (container/logs cli (-> app-name instances first :id) :stdout true :stderr true)]
+        resp (container/logs cli (-> app-name #(instances user) first :id) :stdout true :stderr true)]
     (map #(str (name (:stream-type %))
                ": "
                (:body %)) resp)))
