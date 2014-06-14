@@ -71,7 +71,7 @@
 (defn get-access-tokens [req]
   (let [user (auth/current-user req)]
     {:status 200
-     :body (auth/get-access-tokens user)}))
+     :body (j/encode (auth/get-access-tokens user))}))
 
 (defn add-access-token [req]
   (let [user (auth/current-user req)
