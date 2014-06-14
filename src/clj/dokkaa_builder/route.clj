@@ -7,12 +7,12 @@
             [dokkaa-builder.pages :as pages]
             [cheshire.core :as j]
             [cemerick.friend :as friend]
+            [dokkaa-builder.workflows :as dworkflows]
             [dokkaa-builder.oauth.github :as github]))
 
 (defn get-apps [req]
   (let [app-name (get-in req [:route-params :app])
-        token (get-in req [:params :token])
-        user  (auth/token->user token)]
+        user  (auth/current-user req)]
     (if user
       {:status 200
        :body (j/encode (apps/apps user))}
@@ -20,8 +20,7 @@
 
 (defn get-app [req]
   (let [app-name (get-in req [:route-params :app])
-        token (get-in req [:params :token])
-        user  (auth/token->user token)]
+        user  (auth/current-user req)]
     (if user
       {:status 200
        :body (j/encode (apps/app user app-name))}
@@ -29,8 +28,7 @@
 
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
-        token (get-in req [:params :token])
-        user  (auth/token->user token)
+        user  (auth/current-user req)
         image (get-in req [:params :image])
         tag   (or (get-in req [:params :tag]) "latest")
         command (get-in req [:params :command])
@@ -51,8 +49,7 @@
 
 (defn delete-app [req]
   (let [app-name (get-in req [:route-params :app])
-        token (get-in req [:params :token])
-        user (auth/token->user token)]
+        user (auth/current-user req)]
     (if user
       {:status 200
        :body (j/encode (apps/delete app-name user))}
@@ -60,8 +57,7 @@
 
 (defn logs [req]
   (let [app-name (get-in req [:route-params :app])
-        token (get-in req [:params :token])
-        user (auth/token->user token)]
+        user (auth/current-user req)]
     (if user
       (apps/logs app-name user)
       {:status 401, :body "token is invalid"})))
@@ -90,20 +86,21 @@
   (PUT    "/:app" req (update-app req))
   (DELETE "/:app" req (delete-app req)))
 
-(defroutes users-routes
+(defroutes user-routes
   )
 
 (defroutes routes
   (GET "/" req (index req))
   (GET "/_ping"  [] ping)
   (GET "/status" req (status-page req))
-  (context "/apps" req apps-routes)
-  (context "/user" req (friend/wrap-authorize users-routes))
+  (context "/apps" req (friend/wrap-authorize apps-routes #{:user}))
+  (context "/user" req (friend/wrap-authorize users-routes #{:user}))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (not-found "404 Not Found"))
 
 (def app (-> routes
              (friend/authenticate {:allow-anon? true
-                                   :workflows [(github/workflow)]})
+                                   :workflows [(github/workflow)
+                                               (dworkflows/api-token)]})
              site))

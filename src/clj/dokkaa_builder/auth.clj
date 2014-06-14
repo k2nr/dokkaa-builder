@@ -29,3 +29,8 @@
 
 (defn current-identity [m]
   (:current (friend/identity m)))
+
+(defn current-user [m]
+  (-> m
+      current-identity
+      :user))

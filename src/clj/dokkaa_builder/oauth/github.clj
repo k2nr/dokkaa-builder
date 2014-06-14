@@ -38,7 +38,8 @@
         user (get-github-user token)]
     (set-user! user)
     {:identity {:access-token token
-                :user-name (user "login")}, :roles #{:user}}))
+                :user-name (user "login")}
+     :roles #{:user}}))
 
 (defn workflow [& {:keys [credential-fn]}]
   (oauth2/workflow
