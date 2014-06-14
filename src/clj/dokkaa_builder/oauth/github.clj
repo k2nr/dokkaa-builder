@@ -40,13 +40,12 @@
     {:identity {:access-token token
                 :user-name (user "login")}, :roles #{:user}}))
 
-(defn authenticate [app & {:keys [credential-fn]}]
-  (friend/authenticate
-   app
-   {:allow-anon? true
-    :workflows [(oauth2/workflow
-                 {:client-config client-config
-                  :uri-config    uri-config
-                  :access-token-parsefn get-access-token-from-params
-                  :login-uri "/oauth/github"
-                  :credential-fn default-credential-fn})]}))
+(defn workflow [& {:keys [credential-fn]}]
+  (oauth2/workflow
+   {:client-config client-config
+    :uri-config    uri-config
+    :access-token-parsefn get-access-token-from-params
+    :login-uri "/oauth/github"
+    :credential-fn #(merge (default-credential-fn %)
+                           (when credential-fn
+                             (credential-fn %)))}))

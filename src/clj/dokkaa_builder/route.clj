@@ -104,5 +104,6 @@
   (not-found "404 Not Found"))
 
 (def app (-> routes
-             github/authenticate
+             (friend/authenticate {:allow-anon? true
+                                   :workflows [(github/workflow)]})
              site))
