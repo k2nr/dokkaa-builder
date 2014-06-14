@@ -1,5 +1,6 @@
 (ns dokkaa-builder.route
-  (:require [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
+  (:require [clojure.string :as str]
+            [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
             [compojure.handler :refer [site]]
             [compojure.route :refer [resources files not-found]]
             [cheshire.core :as j]
@@ -67,6 +68,24 @@
     (pages/index)
     "<a href=\"/oauth/github\">Login By GitHub</a>"))
 
+(defn get-access-tokens [req]
+  (let [user (auth/current-user req)]
+    {:status 200
+     :body (auth/get-access-tokens user)}))
+
+(defn add-access-token [req]
+  (let [user (auth/current-user req)
+        token (str/replace (java.util.UUID/randomUUID) "-" "")]
+    (auth/add-access-token user token {})
+    {:status 200
+     :body token}))
+
+(defn delete-access-token [req]
+  (let [user (auth/current-user req)
+        token (get-in req [:params :token])]
+    (auth/add-access-token user token)
+    {:status 200}))
+
 (defn status-page [request]
   (let [count (:count (:session request) 0)
         session (assoc (:session request) :count (inc count))]
@@ -84,13 +103,15 @@
   (DELETE "/:app" req (delete-app req)))
 
 (defroutes user-routes
-  )
+  (GET "/access-tokens" req (get-access-tokens req))
+  (POST "/access-tokens" req (add-access-token req))
+  (DELETE "/access-tokens/:token" req (delete-access-token req)))
 
 (defroutes routes
   (GET "/" req (index req))
   (GET "/status" req (status-page req))
   (context "/apps" req (friend/wrap-authorize apps-routes #{:user}))
-  (context "/user" req (friend/wrap-authorize users-routes #{:user}))
+  (context "/user" req (friend/wrap-authorize user-routes #{:user}))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (not-found "404 Not Found"))

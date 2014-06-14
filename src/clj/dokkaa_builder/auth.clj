@@ -18,6 +18,22 @@
 (defn get-user [id]
   (wcar* (redis/get (str "users:" id))))
 
+(defn get-access-tokens [user]
+  (let [keys (second (wcar* (redis/scan 0 "MATCH"
+                                        (str "access-tokens:" (:id user) ":*"))))]
+    (map #(->> %
+              (re-seq #"access-tokens:[0-9]+:(.*)$")
+              first
+              second)
+         keys)))
+
+(defn add-access-token [user token permissions]
+  (wcar* (redis/set (str "access-tokens:" (:id user) ":" token)
+                    {:permissions permissions})))
+
+(defn delete-access-token [user token]
+  (wcar* (redis/del (str "access-tokens:" (:id user) ":" token))))
+
 (defn current-identity [m]
   (:current (friend/identity m)))
 
