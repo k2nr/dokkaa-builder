@@ -4,6 +4,7 @@
             [sablono.core :as html :refer-macros [html]]
             [dokkaa-builder.views.apps :refer [apps-view]]
             [dokkaa-builder.views.create-app :refer [create-app-view]]
+            [dokkaa-builder.views.user :refer [user-view]]
             ))
 
 (enable-console-print!)
@@ -11,8 +12,9 @@
 (def app-state
   (atom {:current-view :apps}))
 
-(def views {:apps apps-view
-            :create-app create-app-view})
+(def views {:apps       apps-view
+            :create-app create-app-view
+            :user-view  user-view})
 
 (defn change-view [app view-name]
   (om/transact! app :current-view (fn [_] view-name)))
