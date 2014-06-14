@@ -14,7 +14,6 @@
     (will-mount [_]
       (go
         (let [response (<! (api/get-access-tokens "dokkaa.io:8080"))]
-          (.log js/console response)
           (om/transact! app :api-tokens (fn [_] (json-decode (:body response)))))))
 
     om/IRenderState
