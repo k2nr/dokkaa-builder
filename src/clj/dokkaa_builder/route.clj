@@ -62,9 +62,6 @@
       (apps/logs app-name user)
       {:status 401, :body "token is invalid"})))
 
-(defn ping [req]
-  {:status 200})
-
 (defn index [req]
   (if (friend/authorized? [:user] req)
     (pages/index)
@@ -91,7 +88,6 @@
 
 (defroutes routes
   (GET "/" req (index req))
-  (GET "/_ping"  [] ping)
   (GET "/status" req (status-page req))
   (context "/apps" req (friend/wrap-authorize apps-routes #{:user}))
   (context "/user" req (friend/wrap-authorize users-routes #{:user}))
