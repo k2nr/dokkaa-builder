@@ -2,11 +2,11 @@
   (:require [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
             [compojure.handler :refer [site]]
             [compojure.route :refer [resources files not-found]]
+            [cheshire.core :as j]
+            [cemerick.friend :as friend]
             [dokkaa-builder.apps :as apps]
             [dokkaa-builder.auth :as auth]
             [dokkaa-builder.pages :as pages]
-            [cheshire.core :as j]
-            [cemerick.friend :as friend]
             [dokkaa-builder.workflows :as dworkflows]
             [dokkaa-builder.oauth.github :as github]))
 

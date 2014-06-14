@@ -5,6 +5,7 @@
             [clj-http.client :as http]
             [cheshire.core :as j]
             [dokkaa-builder.redis :refer [wcar*]]
+            [dokkaa-builder.auth :as auth]
             [taoensso.carmine :as redis]
             [ring.util.request :as request]))
 
@@ -31,14 +32,18 @@
     (j/decode (:body (http/get url {:accept :json})))))
 
 (defn set-user! [user]
-  (wcar* (redis/set (str "users:" (user "login")) user)))
+  (let [login-name (user "login")
+        user-id (wcar* (redis/get (str "github:login:" login-name)))]
+    (if-not user-id
+      (let [user (auth/add-new-user :username login-name)]
+        (wcar* (redis/set (str "github:login:" login-name) (:id user))))
+      (auth/get-user user-id))))
 
 (defn- default-credential-fn [token]
   (let [token (:access-token token)
-        user (get-github-user token)]
-    (set-user! user)
-    {:identity {:access-token token
-                :user-name (user "login")}
+        github-user (get-github-user token)
+        user (set-user! github-user)]
+    {:identity {:user user}
      :roles #{:user}}))
 
 (defn workflow [& {:keys [credential-fn]}]
