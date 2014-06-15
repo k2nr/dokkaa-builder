@@ -4,6 +4,24 @@
             [taoensso.carmine :as redis]
             [cemerick.friend.credentials :as creds]))
 
+(defn token->user-id [token]
+  (let [keys (second (wcar* (redis/scan 0 "MATCH"
+                                        (str "access-tokens:*:" token))))]
+    (->> keys
+         first
+         (re-seq (re-pattern (str "^access-tokens:([0-9]+):" token "$")))
+         first
+         second
+         Integer.)))
+
+(defn get-user [id]
+  (wcar* (redis/get (str "users:" id))))
+
+(defn token->user [token]
+  (-> token
+      token->user-id
+      get-user))
+
 (defn new-user-id []
   (wcar* (redis/incr "auto-user-id")))
 
@@ -14,9 +32,6 @@
             (str "users:" id)
             user))
     user))
-
-(defn get-user [id]
-  (wcar* (redis/get (str "users:" id))))
 
 (defn get-access-tokens [user]
   (let [keys (second (wcar* (redis/scan 0 "MATCH"

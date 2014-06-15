@@ -36,7 +36,8 @@
         user-id (wcar* (redis/get (str "github:login:" login-name)))]
     (if-not user-id
       (let [user (auth/add-new-user :username login-name)]
-        (wcar* (redis/set (str "github:login:" login-name) (:id user))))
+        (wcar* (redis/set (str "github:login:" login-name) (:id user)))
+        user)
       (auth/get-user user-id))))
 
 (defn- default-credential-fn [token]
