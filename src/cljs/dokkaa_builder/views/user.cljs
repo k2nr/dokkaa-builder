@@ -20,4 +20,12 @@
     (render-state [this state]
       (html [:div {:id "app-view"}
              [:ul (map (fn [t] [:li t])
-                       (:api-tokens app))]]))))
+                       (:api-tokens app))]
+             [:div
+              [:button {:class "pure-button pure-button-primary"
+                        :on-click
+                        (fn [e]
+                          (go
+                            (let [{body :body} (<! (api/add-access-token "dokkaa.io:8080"))]
+                             (om/transact! app :api-tokens #(conj % body)))))}
+               "New Token"]]]))))
