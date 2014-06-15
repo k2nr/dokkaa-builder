@@ -7,16 +7,23 @@
             [sablono.core :as html :refer-macros [html]]
             ))
 
+(defn app-view [app owner]
+  (reify
+    om/IRenderState
+    (render-state [this state]
+      (html
+       [:li
+        [:div (:name app)]]))))
+
 (defn apps-view [app owner]
   (reify
     om/IWillMount
     (will-mount [_]
       (go
-        (let [response (<! (api/apps :host "dokkaa.io:8080" :token "dummy"))]
+        (let [response (<! (api/apps "dokkaa.io:8080"))]
           (om/transact! app :apps (fn [_] (json-decode (:body response)))))))
 
     om/IRenderState
     (render-state [this state]
       (html [:div {:id "apps-view"}
-             [:ul (map (fn [[k v]] [:li (name k)])
-                       (:apps app))]]))))
+             [:ul (om/build-all app-view (:apps app))]]))))

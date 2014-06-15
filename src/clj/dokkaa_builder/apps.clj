@@ -73,7 +73,8 @@
         backends (pick-backends ps)
         front-url (default-frontend-url app-name)
         old-isntances (instances user app-name)
-        app {:status  :creating
+        app {:name    app-name
+             :status  :creating
              :image   image
              :tag     tag
              :ps      (count backends)
