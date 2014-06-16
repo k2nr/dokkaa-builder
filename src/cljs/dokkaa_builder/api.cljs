@@ -9,3 +9,6 @@
 
 (defn add-access-token [host & {:keys [token]}]
   (http/post (str "http://" host "/user/access-tokens")))
+
+(defn delete-access-token [host access-token & {:keys [token]}]
+  (http/delete (str "http://" host "/user/access-tokens/" access-token)))

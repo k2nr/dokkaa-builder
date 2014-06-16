@@ -83,7 +83,7 @@
 (defn delete-access-token [req]
   (let [user (auth/current-user req)
         token (get-in req [:params :token])]
-    (auth/add-access-token user token)
+    (auth/delete-access-token user token)
     {:status 200}))
 
 (defn status-page [request]
