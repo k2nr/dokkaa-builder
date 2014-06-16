@@ -13,7 +13,23 @@
     (render-state [this state]
       (html
        [:li
-        [:div (:name app)]]))))
+        [:div
+         [:span "Name: "]
+         [:span (:name app)]]
+        [:div
+         [:span "Status: "]
+         [:span (:status app)]]
+        [:div
+         [:span "Image: "]
+         [:span (str (:image app) ":" (or (:tag app) "latest"))]]
+        [:div
+         [:span "container count: "]
+         [:span (:ps app)]]
+        [:button {:on-click (fn [e]
+                              (go (let [resp (<! (api/delete-app
+                                                  "dokkaa.io:8080"
+                                                  (:name @app)))])))}
+         "Delete"]]))))
 
 (defn apps-view [app owner]
   (reify
@@ -25,5 +41,6 @@
 
     om/IRenderState
     (render-state [this state]
-      (html [:div {:id "apps-view"}
+      (html [:div {:id "apps-view"
+                   :class "pure-menu pure-menu-open"}
              [:ul (om/build-all app-view (:apps app))]]))))

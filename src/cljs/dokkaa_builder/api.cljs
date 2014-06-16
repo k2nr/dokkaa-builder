@@ -12,3 +12,6 @@
 
 (defn delete-access-token [host access-token & {:keys [token]}]
   (http/delete (str "http://" host "/user/access-tokens/" access-token)))
+
+(defn delete-app [host app-name & {:keys [token]}]
+  (http/delete (str "http://" host "/apps/" app-name)))
