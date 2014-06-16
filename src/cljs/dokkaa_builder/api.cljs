@@ -15,3 +15,7 @@
 
 (defn delete-app [host app-name & {:keys [token]}]
   (http/delete (str "http://" host "/apps/" app-name)))
+
+(defn create-app [host app-name opts & {:keys [token]}]
+  (http/post (str "http://" host "/apps/" app-name)
+             {:query-params opts}))

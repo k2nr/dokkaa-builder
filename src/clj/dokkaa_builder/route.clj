@@ -27,14 +27,19 @@
        :body (j/encode (apps/app user app-name))}
       {:status 401, :body "token is invalid"})))
 
+(defn- parse-int [s & {:keys [default]}]
+  (if (or (nil? s) (empty? s))
+    default
+    (Integer. s)))
+
 (defn create-app [req]
   (let [app-name (get-in req [:route-params :app])
         user  (auth/current-user req)
         image (get-in req [:params :image])
         tag   (or (get-in req [:params :tag]) "latest")
         command (get-in req [:params :command])
-        port  (get-in req [:params :port])
-        ps (Integer. (or (get-in req [:params :ps]) 1))
+        port  (parse-int (get-in req [:params :port]))
+        ps (parse-int (get-in req [:params :ps]) :default 1)
         port-bind-to (+ (rand-int 1000) 10000)]
     (if user
       {:status 200

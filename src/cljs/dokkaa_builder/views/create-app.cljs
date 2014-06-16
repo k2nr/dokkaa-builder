@@ -6,21 +6,28 @@
             [sablono.core :as html :refer-macros [html]]
             ))
 
-(defn node-value [owner ref]
+(defn- node-value [owner ref]
   (-> (om/get-node owner ref)
       .-value))
 
-(defn app-properties [owner]
+(defn- app-properties [owner]
   {:app-name (node-value owner "app-name")
-   :image-name (node-value owner "image-name")
+   :image (node-value owner "image-name")
    :tag (node-value owner "tag")
    :command (node-value owner "command")
-   :port (js/parseInt (node-value owner "port"))})
+   :port (node-value owner "port")
+   :ps   (node-value owner "ps")})
 
-(defn descripted-input-block [desc opts]
+(defn- descripted-input-block [desc opts]
   [:div
    [:span desc]
    [:input (merge {:type "text"} opts)]])
+
+(defn- create-app! [app owner]
+  (go (let [properties (app-properties owner)
+            resp (<! (api/create-app "dokkaa.io:8080"
+                                     (:app-name properties)
+                                     (dissoc properties :app-name)))])))
 
 (defn create-app-view [app owner]
   (reify
@@ -32,6 +39,8 @@
              (descripted-input-block "Tag" {:ref "tag"})
              (descripted-input-block "Command" {:ref "command"})
              (descripted-input-block "Port" {:ref "port"})
+             (descripted-input-block "PS" {:ref "ps"})
              [:div
               [:button {:class "pure-button pure-button-primary"
-                        :on-click (fn [e] (js/alert (str (app-properties owner))))} "Create"]]]))))
+                        :on-click (fn [e] (create-app! app owner))}
+               "Create"]]]))))
