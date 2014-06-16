@@ -1,7 +1,7 @@
 (ns dokkaa-builder.api
   (:require [cljs-http.client :as http]))
 
-(defn apps [host {:keys [token]}]
+(defn get-apps [host & {:keys [token]}]
   (http/get (str "http://" host "/apps") {:query-params {:token token}}))
 
 (defn get-access-tokens [host & {:keys [token]}]
