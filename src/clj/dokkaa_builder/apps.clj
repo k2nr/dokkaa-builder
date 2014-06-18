@@ -7,7 +7,6 @@
             [dokkaa-builder.clusters :as clusters]
             [dokkaa-builder.redis :refer [wcar*]]
             [clojurewerkz.urly.core :as urly]
-
             [taoensso.carmine :as redis]
             ))
 
@@ -33,8 +32,8 @@
 (defn- pick-backends
   "Randomly choose docker backend"
   [n]
-  (mapv (fn [ip] {:client (docker/make-client (str ip ":2375"))
-                  :port   (router/generate-host-port ip)})
+  (mapv (fn [host] {:client (docker/make-client host)
+                    :port   (router/generate-host-port (urly/host-of host))})
         (->> (clusters/docker-hosts)
              shuffle
              (take n))))
@@ -57,7 +56,7 @@
                :cmd command
                :port-bindings {host-port port})
           upstream (upstream-url cli host-port)]
-      {:id id, :host upstream})))
+      {:id id, :docker-host (.host cli), :host upstream})))
 
 (defn create [app-name user image & {:keys [tag command port ps]}]
   (let [ps (or ps 1)
@@ -98,8 +97,8 @@
 
 (defn delete-instances [instances]
   (doseq [i instances]
-    (let [{host :host, id :id} i
-          cli (docker/make-client (str (urly/host-of (urly/url-like host)) ":4243"))]
+    (let [{:keys [docker-host id]} i
+          cli (docker/make-client docker-host)]
       (container/stop cli id)
       (container/remove cli id))))
 
