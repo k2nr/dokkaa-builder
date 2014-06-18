@@ -3,6 +3,8 @@
             [compojure.core :refer [defroutes GET POST PUT DELETE ANY context]]
             [compojure.handler :refer [site]]
             [compojure.route :refer [resources files not-found]]
+            [ring.middleware.session.cookie :as cookie]
+            [environ.core :refer [env]]
             [cheshire.core :as j]
             [cemerick.friend :as friend]
             [dokkaa-builder.apps :as apps]
@@ -121,8 +123,12 @@
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (not-found "404 Not Found"))
 
+(defn wrap-site [app]
+  (let [store (cookie/cookie-store {:key (env :session-secret)})]
+    (site app {:session {:store store}})))
+
 (def app (-> routes
              (friend/authenticate {:allow-anon? true
                                    :workflows [(github/workflow)
                                                (dworkflows/api-token)]})
-             site))
+             wrap-site))
