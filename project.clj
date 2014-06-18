@@ -27,7 +27,7 @@
                  [ring "1.3.0"]
                  ; not yet released but will use after released
 ;                 [ring/ring-defaults "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojurescript "0.0-2227"]
+                 [org.clojure/clojurescript "0.0-2234"]
                  [om "0.6.4"]
                  [sablono "0.2.17"]
                  [cljs-http "0.1.11"
