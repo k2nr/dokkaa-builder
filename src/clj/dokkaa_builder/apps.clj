@@ -4,11 +4,12 @@
             [k2nr.docker.container :as container]
             [dokkaa-builder.apps-router :as router]
             [dokkaa-builder.config :as config]
-            [clojurewerkz.urly.core :as urly]
+            [dokkaa-builder.clusters :as clusters]
             [dokkaa-builder.redis :refer [wcar*]]
+            [clojurewerkz.urly.core :as urly]
+
             [taoensso.carmine :as redis]
-            [dokkaa-builder.etcd :as etcd]
-            [dokkaa-builder.config :as config]))
+            ))
 
 (declare delete-instances)
 
@@ -29,22 +30,12 @@
 (defn delete-app [user app-name]
   (wcar* (redis/del (rkey "users" (:id user) "apps" app-name))))
 
-(defn cluster-ips []
-  (try
-    (mapv #(-> %
-              (get "clientURL")
-              urly/url-like
-              urly/host-of)
-         (etcd/machines (str "http://" (config/docker-host-url) ":7001")))
-    (catch Exception e
-      ["127.0.0.1"])))
-
 (defn- pick-backends
   "Randomly choose docker backend"
   [n]
-  (mapv (fn [ip] {:client (docker/make-client (str ip ":4243"))
+  (mapv (fn [ip] {:client (docker/make-client (str ip ":2375"))
                   :port   (router/generate-host-port ip)})
-        (->> (cluster-ips)
+        (->> (clusters/docker-hosts)
              shuffle
              (take n))))
 
