@@ -8,6 +8,7 @@
             [dokkaa-builder.redis :refer [wcar*]]
             [clojurewerkz.urly.core :as urly]
             [taoensso.carmine :as redis]
+            [slingshot.slingshot :refer [try+]]
             ))
 
 (declare delete-instances)
@@ -71,18 +72,20 @@
              :user-id (:id user)}]
     (set-app user app-name app)
     (future
-      (let [futures (doall (for [{cli :client host-port :port} backends]
-                             (future-create-instance cli host-port image
-                                                     :port port
-                                                     :tag tag
-                                                     :command command)))
-            new-instances (mapv deref futures)]
-        (when old-isntances (router/delete-domain front-url))
-        (apply router/add-domain front-url (map :host new-instances))
-        (set-app user app-name (merge app {:status :running
-                                           :front-urls [front-url]
-                                           :instances  new-instances}))
-        (when old-isntances (delete-instances old-isntances))))
+      (try+ (let [futures (doall (for [{cli :client host-port :port} backends]
+                                   (future-create-instance cli host-port image
+                                                           :port port
+                                                           :tag tag
+                                                           :command command)))
+                  new-instances (mapv deref futures)]
+              (when old-isntances (router/delete-domain front-url))
+              (apply router/add-domain front-url (map :host new-instances))
+              (set-app user app-name (merge app {:status :running
+                                                 :front-urls [front-url]
+                                                 :instances  new-instances}))
+              (when old-isntances (delete-instances old-isntances)))
+            (catch Object _
+              (set-app user app-name (merge app {:status :failed})))))
     app))
 
 (defn update [req]
