@@ -127,7 +127,15 @@
   (let [store (cookie/cookie-store {:key (env :session-secret)})]
     (site app {:session {:store store}})))
 
+(defn wrap-error [app]
+  (fn [req]
+    (try (app req)
+      (catch Exception e
+        {:status 500
+         :body (j/encode {:message "Internal Server Error"})}))))
+
 (def app (-> routes
+             wrap-error
              (friend/authenticate {:allow-anon? true
                                    :workflows [(github/workflow)
                                                (dworkflows/api-token)]})
