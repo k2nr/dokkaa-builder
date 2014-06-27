@@ -36,6 +36,7 @@
                   :exclusions [org.clojure/clojure org.clojure/clojurescript]]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
+  :repl-options {:init-ns dokkaa-builder.core}
   :plugins [[lein-environ "0.5.0"]
             [lein-cljsbuild "1.0.3"]
             [com.cemerick/austin "0.1.4"]]
