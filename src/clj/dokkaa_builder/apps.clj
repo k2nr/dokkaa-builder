@@ -21,7 +21,7 @@
   (let [keys (wcar* (redis/keys (rkey "users" (:id user) "apps" "*")))]
     (mapv #(wcar* (redis/get %)) keys)))
 
-(defn app [user app-name]
+(defn get-app [user app-name]
   (wcar* (redis/get (rkey "users" (:id user) "apps" app-name))))
 
 (defn set-app [user app-name app]
@@ -48,7 +48,7 @@
     url))
 
 (defn instances [user app-name]
-  (:instances (app user app-name)))
+  (:instances (get-app user app-name)))
 
 (defn future-create-instance [cli host-port image & {:keys [port tag command]}]
   (future
@@ -70,23 +70,26 @@
              :tag     tag
              :ps      (count backends)
              :user-id (:id user)}]
-    (set-app user app-name app)
-    (future
-      (try+ (let [futures (doall (for [{cli :client host-port :port} backends]
-                                   (future-create-instance cli host-port image
-                                                           :port port
-                                                           :tag tag
-                                                           :command command)))
-                  new-instances (mapv deref futures)]
-              (when old-isntances (router/delete-domain front-url))
-              (apply router/add-domain front-url (map :host new-instances))
-              (set-app user app-name (merge app {:status :running
-                                                 :front-urls [front-url]
-                                                 :instances  new-instances}))
-              (when old-isntances (delete-instances old-isntances)))
-            (catch Object _
-              (set-app user app-name (merge app {:status :failed})))))
-    app))
+    (if (= :creating (:status (get-app user app-name)))
+      nil
+      (do
+        (set-app user app-name app)
+        (future
+          (try+ (let [futures (doall (for [{cli :client host-port :port} backends]
+                                       (future-create-instance cli host-port image
+                                                               :port port
+                                                               :tag tag
+                                                               :command command)))
+                      new-instances (mapv deref futures)]
+                  (when old-isntances (router/delete-domain front-url))
+                  (apply router/add-domain front-url (map :host new-instances))
+                  (set-app user app-name (merge app {:status :running
+                                                     :front-urls [front-url]
+                                                     :instances  new-instances}))
+                  (when old-isntances (delete-instances old-isntances)))
+                (catch Object _
+                  (set-app user app-name (merge app {:status :failed})))))
+        app))))
 
 (defn update [req]
   )

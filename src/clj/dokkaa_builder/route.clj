@@ -26,7 +26,7 @@
         user  (auth/current-user req)]
     (if user
       {:status 200
-       :body (j/encode (apps/app user app-name))}
+       :body (j/encode (apps/get-app user app-name))}
       {:status 401, :body "token is invalid"})))
 
 (defn- parse-int [s & {:keys [default]}]
@@ -43,14 +43,16 @@
         port  (parse-int (get-in req [:params :port]))
         ps (parse-int (get-in req [:params :ps]) :default 1)
         port-bind-to (+ (rand-int 1000) 10000)]
-    (if user
-      {:status 200
-       :body (j/encode (apps/create app-name user image
-                                    :tag tag
-                                    :command command
-                                    :port port
-                                    :ps ps))}
-      {:status 401, :body "token is invalid"})))
+    (cond
+     (nil? user) {:status 401, :body "token is invalid"}
+     :else (if-let [app (apps/create app-name user image
+                                     :tag tag
+                                     :command command
+                                     :port port
+                                     :ps ps)]
+             {:status 200 :body (j/encode app)}
+             {:status 204})
+      )))
 
 (defn update-app [req]
   )
