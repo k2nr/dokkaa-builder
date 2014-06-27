@@ -22,21 +22,17 @@
     om/IRenderState
     (render-state [this {refresh :refresh}]
       (html
-       [:li
-        [:div
-         [:span "Name: "]
-         [:span (:name app)]]
-        [:div
-         [:span "Status: "]
-         [:span (:status app)]]
-        [:div
-         [:span "Image: "]
-         [:span (str (:image app) ":" (or (:tag app) "latest"))]]
-        [:div
-         [:span "container count: "]
-         [:span (:ps app)]]
-        [:button {:on-click (fn [e] (delete-app! (:name @app) refresh))}
-         "Delete"]]))))
+       [:tr
+        [:td (:name app)]
+        [:td (str (:image app) ":" (or (:tag app) "latest"))]
+        [:td (:ps app)]
+        [:td (:status app)]
+        [:td
+         [:button {:class (if (= (:status app) :creating)
+                            "pure-button pure-button-disabled"
+                            "pure-button")
+                   :on-click (fn [e] (delete-app! (:name @app) refresh))}
+          "Delete"]]]))))
 
 (defn apps-view [app owner]
   (reify
@@ -56,7 +52,15 @@
 
     om/IRenderState
     (render-state [this {refresh :refresh}]
-      (html [:div {:id "apps-view"
-                   :class "pure-menu pure-menu-open"}
-             [:ul (om/build-all app-view (:apps app)
-                                {:init-state {:refresh refresh}})]]))))
+      (html [:div {:id "apps-view"}
+             [:table {:class "pure-table"}
+              [:thead
+               [:tr
+                [:td "Name"]
+                [:td "Image"]
+                [:td "Count"]
+                [:td "Status"]
+                [:td "Delete"]]]
+              [:tbody
+               (om/build-all app-view (:apps app)
+                             {:init-state {:refresh refresh}})]]]))))

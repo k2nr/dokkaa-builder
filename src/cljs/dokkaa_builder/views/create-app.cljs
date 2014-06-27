@@ -19,9 +19,9 @@
    :ps   (node-value owner "ps")})
 
 (defn- descripted-input-block [desc opts]
-  [:div
-   [:span desc]
-   [:input (merge {:type "text"} opts)]])
+  [:tr
+   [:td desc]
+   [:td [:input (merge {:type "text"} opts)]]])
 
 (defn- create-app! [app owner]
   (go (let [properties (app-properties owner)
@@ -34,13 +34,16 @@
     om/IRenderState
     (render-state [this state]
       (html [:div
-             (descripted-input-block "App Name" {:ref "app-name"})
-             (descripted-input-block "Image" {:ref "image-name"})
-             (descripted-input-block "Tag" {:ref "tag"})
-             (descripted-input-block "Command" {:ref "command"})
-             (descripted-input-block "Port" {:ref "port"})
-             (descripted-input-block "PS" {:ref "ps"})
-             [:div
-              [:button {:class "pure-button pure-button-primary"
-                        :on-click (fn [e] (create-app! app owner))}
-               "Create"]]]))))
+             [:table
+              (descripted-input-block "App Name" {:ref "app-name"})
+              (descripted-input-block "Image" {:ref "image-name"})
+              (descripted-input-block "Tag" {:ref "tag"})
+              (descripted-input-block "Command" {:ref "command"})
+              (descripted-input-block "Port" {:ref "port"})
+              (descripted-input-block "PS" {:ref "ps"})
+              [:tr
+               [:td
+                [:div
+                 [:button {:class "pure-button pure-button-primary"
+                           :on-click (fn [e] (create-app! app owner))}
+                  "Create"]]]]]]))))
