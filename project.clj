@@ -23,16 +23,15 @@
                  [friend-oauth2 "0.1.1"
                   :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
-                 [etcd-clojure "0.1.4"]
                  [ring "1.3.0"]
                  ; not yet released but will use after released
 ;                 [ring/ring-defaults "0.1.0-SNAPSHOT"]
                  [org.clojure/clojurescript "0.0-2234"]
                  [om "0.6.4"]
                  [sablono "0.2.17"]
-                 [cljs-http "0.1.11"
+                 [cljs-http "0.1.12"
                   :exclusions [org.clojure/core.async org.clojure/clojurescript]]
-                 [secretary "1.1.1"
+                 [secretary "1.2.0"
                   :exclusions [org.clojure/clojure org.clojure/clojurescript]]]
   :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
