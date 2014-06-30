@@ -16,5 +16,4 @@
                       docker-url))
           (etcd/machines (str "http://" (config/docker-host-url) ":7001")))
     (catch Exception e
-      (or [(env :docker-host)]
-          ["tcp://127.0.0.1:2375"]))))
+      [(or (env :docker-host) "tcp://127.0.0.1:2375")])))
