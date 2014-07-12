@@ -3,42 +3,37 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0-alpha2"]
                  [org.clojure/core.async "0.1.303.0-886421-alpha"]
-                 [environ "0.5.0"]
-                 [http-kit "2.1.18"]
+                 [org.clojure/core.typed "0.2.68"]
+                 [prismatic/plumbing "0.3.3"]
+                 [environ "1.0.0"]
+                 [http-kit "2.1.19"]
                  [cheshire "5.3.1"]
-                 ; clj-http uses tools.read 0.8.4. with this version compiling cljs will fail.
-                 ; I don't know why but using 0.8.3 explicitly works for now
-                 [org.clojure/tools.reader "0.8.3"]
-                 [clj-http "0.9.2" :exclusions [org.clojure/tools.reader]]
+                 [clj-http "1.0.0"]
                  [hiccup "1.0.5"]
-                 [compojure "1.1.8"]
-                 [com.google.guava/guava "17.0"]
-                 [clojurewerkz/urly "1.0.0"
-                  :exclusions [com.google.guava/guava]]
-                 [com.taoensso/carmine "2.6.2"]
+                 [ring "1.3.1"]
+                 [compojure "1.1.9"]
+                 [lib-noir "0.8.9"]
+                 [clojurewerkz/urly "1.0.0"]
+                 [com.taoensso/carmine "2.7.0"
+                  :exclusions [org.clojure/clojure]]
                  [com.cemerick/friend "0.2.1"
                   :exclusions [org.apache.httpcomponents/httpclient]]
-                 [friend-oauth2 "0.1.1"
-                  :exclusions [com.cemerick/friend ring clj-http cheshire org.clojure/clojure]]
+                 [friend-oauth2 "0.1.1"]
                  [k2nr/docker "0.0.3-SNAPSHOT"]
-                 [ring "1.3.0"]
-                 ; not yet released but will use after released
-;                 [ring/ring-defaults "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojurescript "0.0-2234"]
-                 [om "0.6.4"]
-                 [sablono "0.2.17"]
-                 [cljs-http "0.1.12"
-                  :exclusions [org.clojure/core.async org.clojure/clojurescript]]
-                 [secretary "1.2.0"
-                  :exclusions [org.clojure/clojure org.clojure/clojurescript]]]
-  :profiles {:dev {:dependencies [[ring/ring-devel "1.3.0"]
+                 [ring/ring-defaults "0.1.2"]
+                 [org.clojure/clojurescript "0.0-2342"]
+                 [om "0.7.3"]
+                 [sablono "0.2.22"]
+                 [cljs-http "0.1.16"]
+                 [secretary "1.2.1"]]
+  :profiles {:dev {:dependencies [[ring/ring-devel "1.3.1"]
                                   [org.clojure/tools.trace "0.7.8"]]}}
   :repl-options {:init-ns dokkaa-builder.core}
-  :plugins [[lein-environ "0.5.0"]
+  :plugins [[lein-environ "1.0.0"]
             [lein-cljsbuild "1.0.3"]
-            [com.cemerick/austin "0.1.4"]]
+            [com.cemerick/austin "0.1.5"]]
   :source-paths ["src/clj" "src/cljs"]
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
